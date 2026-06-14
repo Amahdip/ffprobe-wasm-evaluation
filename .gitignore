@@ -11,7 +11,12 @@ node_modules
 dist
 dist-ssr
 *.local
-public/fixtures
+
+# Optional / heavy / imported fixtures — generate locally, not committed
+public/fixtures/real-world/
+public/fixtures/special/h264-aac-long-30fps.mp4
+public/fixtures/special/h264-aac-4k-30fps.mp4
+
 deploy/tls/
 
 # Editor directories and files

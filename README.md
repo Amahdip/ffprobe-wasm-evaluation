@@ -6,19 +6,28 @@ Evaluation app for **ffprobe-wasm@0.3.1** and future media-analysis engines (Apa
 
 ```bash
 npm install
-npm run fixtures:generate      # synthetic test videos → public/fixtures/ (requires ffmpeg)
-npm run samples:import-downloads  # optional: real-world samples from ~/Downloads
-npm run dev
+npm run dev            # core fixtures are already in public/fixtures/
+```
+
+Optional: `npm run fixtures:generate` only if you changed the test matrix and need to recreate clips (requires ffmpeg).
 ```
 
 Open the URL printed by Vite (default `http://localhost:5173`).
 
 ## Production build & Netlify deploy
 
-Production **must** include sample fixture videos. They live under `public/fixtures/` and are copied into `dist/fixtures/` by Vite.
+Production includes **committed core test videos** in `public/fixtures/` (~1.5 MiB, 27 clips). They are copied into `dist/fixtures/` by Vite — no ffmpeg needed on Netlify.
 
 ```bash
-npm run build:deploy   # fixtures:generate + production build
+npm run build:deploy   # verify fixtures + production build
+```
+
+To **regenerate** core fixtures after matrix changes (requires ffmpeg):
+
+```bash
+npm run fixtures:generate
+git add public/fixtures/
+git commit -m "Update core test fixtures"
 ```
 
 Deploy to **Netlify** — see [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md). Settings are in [`netlify.toml`](./netlify.toml) (build command, publish dir, COOP/COEP headers).
@@ -72,7 +81,7 @@ src/lib/engines/          # MediaAnalysisEngine registry + adapters
 src/lib/comparison/       # side-by-side diff, reliability, benchmarks
 src/lib/fixtures/         # fixture URLs + availability checks
 src/lib/ffprobe/          # normalization, validation
-public/fixtures/          # sample videos (gitignored, generated)
+public/fixtures/          # core sample videos (committed); optional/heavy gitignored
 compatibility/            # test-matrix.json
 netlify.toml              # Netlify build + COOP/COEP headers
 docs/DEPLOYMENT.md        # Netlify deploy checklist
