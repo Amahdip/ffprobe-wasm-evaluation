@@ -13,7 +13,7 @@
     "fixtures:manifest": "node scripts/compatibility/write-fixture-manifest.mjs && cp compatibility/test-matrix.json public/compatibility/test-matrix.json",
     "fixtures:ensure": "node scripts/compatibility/ensure-core-fixtures.mjs",
     "samples:import-downloads": "bash scripts/compatibility/import-downloads.sh",
-    "prebuild": "npm run fixtures:ensure",
+    "prebuild": "npm run fixtures:ensure && node scripts/copy-bench-summary.mjs",
     "build:deploy": "npm run build",
     "verify:deployment": "bash scripts/verify-deployment.sh",
     "lint": "eslint .",

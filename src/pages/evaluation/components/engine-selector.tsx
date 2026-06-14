@@ -50,7 +50,7 @@ export function EngineSelector({
       </div>
       <p className="status-text" style={{ marginTop: 0 }}>
         {mode === 'compare'
-          ? 'Runs all registered engines side-by-side on the same file.'
+          ? 'Runs all available engines side-by-side (npm ffprobe-wasm + minimal-metadata-ffprobe).'
           : 'Runs one selected engine.'}
       </p>
       <div className="engine-list">

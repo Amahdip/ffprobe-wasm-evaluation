@@ -4,6 +4,8 @@ import type { AnalysisResult } from '../engines/types'
 import type { EngineComparisonReport, MatrixEngineSummary } from '../comparison/types'
 import { buildRecommendationFromValidation } from '../ffprobe/recommendation'
 import { getAllEngines } from '../engines/registry'
+import type { BenchSummary } from '../evaluation/bench-summary'
+import { formatBenchSummaryForExport } from '../evaluation/bench-summary'
 
 export function downloadTextFile(filename: string, content: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType })
@@ -103,6 +105,7 @@ export function exportMarkdownReport(options: {
   browser: string
   tester: string
   bundleSummary: string
+  benchSummary?: BenchSummary | null
   results: CompatibilityTestResult[]
   comparison: EngineComparisonReport | null
   engineResults: AnalysisResult[]
@@ -110,6 +113,9 @@ export function exportMarkdownReport(options: {
 }) {
   const latestValidation = options.engineResults.find((r) => r.success)?.validation ?? null
   const recommendation = buildRecommendationFromValidation(latestValidation)
+  const benchBlock = options.benchSummary
+    ? formatBenchSummaryForExport(options.benchSummary)
+    : 'Bench summary not loaded'
 
   const enginePassTable = options.matrixSummaries
     .map(
@@ -162,6 +168,9 @@ ${enginePassTable || '| — | — |'}
 ## Bundle impact
 ${options.bundleSummary}
 
+## Controlled bench summary (ffprobe-wasm repo)
+${benchBlock}
+
 ## Supported formats
 ${supportedFormats}
 
@@ -183,12 +192,21 @@ ${benchmarkTable || '| — | — | — | — | — | — |'}
 | --- | --- | --- | --- |
 ${reliabilityTable || '| — | — | — | — |'}
 
-## Preflight recommendation (ffprobe-wasm policy layer)
+## Preflight recommendation (supervisor)
 **${recommendation.recommendationLabel}**
 
 ${recommendation.reason}
 
-## Engine recommendation
+### Caveats
+${recommendation.caveats.map((c) => `- ${c}`).join('\n')}
+
+### Good for
+${recommendation.goodFor.map((g) => `- ${g}`).join('\n')}
+
+### Risks
+${recommendation.risks.map((r) => `- ${r}`).join('\n')}
+
+## Engine recommendation (compare mode)
 ${engineRec ? `**${engineRec.preferredEngineName ?? 'Undecided'}** — ${engineRec.summary}
 
 ${engineRec.reasons.map((r) => `- ${r}`).join('\n')}` : 'Run compare mode on a file to generate engine recommendation.'}

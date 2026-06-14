@@ -17,12 +17,18 @@ import {
 } from '../../lib/comparison'
 import {
   getAllEngines,
+  getEngine,
   resolveEngineSelection,
   runEnginesAnalysis,
   type AnalysisResult,
 } from '../../lib/engines'
 import { getWasmEnvironmentStatus } from '../../lib/browser-environment'
 import { BUNDLE_IMPACT, BUNDLE_TECHNICAL_DETAILS } from '../../lib/evaluation/bundle-impact'
+import {
+  loadBenchSummary,
+  type BenchSummary,
+  BENCH_SUMMARY_FALLBACK,
+} from '../../lib/evaluation/bench-summary'
 import {
   checkFixturesForTestCases,
   formatFixtureMissingError,
@@ -45,9 +51,11 @@ import {
   exportSingleAnalysisCsv,
 } from '../../lib/export/report-export'
 import { BenchmarkDashboard } from './components/benchmark-dashboard'
+import { BenchSummaryCard } from './components/bench-summary-card'
 import { CompareTable } from './components/compare-table'
 import { EngineScorecards } from './components/engine-scorecards'
 import { EngineSelector, type AnalyzeMode } from './components/engine-selector'
+import { SizeComparisonCard } from './components/size-comparison-card'
 
 interface TestMatrix {
   version: string
@@ -56,6 +64,14 @@ interface TestMatrix {
 }
 
 type TabId = 'analyze' | 'matrix'
+
+function canRunEngine(engineId: string, env: ReturnType<typeof getWasmEnvironmentStatus>): boolean {
+  const engine = getEngine(engineId)
+  if (!engine?.available) return false
+  if (engineId === 'ffprobe-wasm') return env.canRunFfprobeWasm
+  if (engineId === 'minimal-metadata-ffprobe') return env.isSecureContext
+  return true
+}
 
 export function EvaluationApp() {
   const wasmEnvironment = useMemo(() => getWasmEnvironmentStatus(), [])
@@ -81,6 +97,11 @@ export function EvaluationApp() {
   const [fixtureCheckLoading, setFixtureCheckLoading] = useState(true)
   const [includeOptionalFixtures, setIncludeOptionalFixtures] = useState(false)
   const [matrixError, setMatrixError] = useState<string | null>(null)
+  const [benchSummary, setBenchSummary] = useState<BenchSummary>(BENCH_SUMMARY_FALLBACK)
+
+  useEffect(() => {
+    loadBenchSummary().then(setBenchSummary)
+  }, [])
 
   useEffect(() => {
     fetch('/compatibility/test-matrix.json')
@@ -141,19 +162,27 @@ export function EvaluationApp() {
       return
     }
 
-    if (!wasmEnvironment.canRunFfprobeWasm) {
+    if (!wasmEnvironment.canRunFfprobeWasm && !wasmEnvironment.isSecureContext) {
       setError([wasmEnvironment.issue, wasmEnvironment.recommendation].filter(Boolean).join(' '))
-      setStatus('Cannot run ffprobe-wasm in this browser environment.')
+      setStatus('Cannot run analysis in this browser environment.')
+      return
+    }
+
+    const engineIds = resolveEngineSelection(analyzeMode, [selectedEngineId])
+    const runnableIds = engineIds.filter((id) => canRunEngine(id, wasmEnvironment))
+
+    if (runnableIds.length === 0) {
+      setError('No selected engines can run in this browser environment.')
+      setStatus('Cannot run analysis.')
       return
     }
 
     setIsAnalyzing(true)
     setError(null)
-    const engineIds = resolveEngineSelection(analyzeMode, [selectedEngineId])
-    setStatus(`Analyzing with ${engineIds.length} engine(s)…`)
+    setStatus(`Analyzing with ${runnableIds.length} engine(s)…`)
 
     try {
-      const results = await runEnginesAnalysis(engineIds, selectedFile, policy)
+      const results = await runEnginesAnalysis(runnableIds, selectedFile, policy)
       const report = buildEngineComparisonReport(selectedFile.name, results, matrixSummaries)
 
       setEngineResults(results)
@@ -288,9 +317,13 @@ export function EvaluationApp() {
 
           {!wasmEnvironment.canRunFfprobeWasm ? (
             <section className="card environment-warning">
-              <h2 className="card-title">Browser environment blocks ffprobe-wasm</h2>
+              <h2 className="card-title">Browser environment note</h2>
               {wasmEnvironment.issue ? <p className="status-error">{wasmEnvironment.issue}</p> : null}
               {wasmEnvironment.recommendation ? <p>{wasmEnvironment.recommendation}</p> : null}
+              <p className="status-text">
+                npm ffprobe-wasm requires COOP/COEP + SharedArrayBuffer.{' '}
+                <strong>minimal-metadata-ffprobe</strong> can still run in compare mode on HTTPS without cross-origin isolation.
+              </p>
               <p className="status-text">
                 Secure context: {wasmEnvironment.isSecureContext ? 'yes' : 'no'} · Cross-origin isolated:{' '}
                 {wasmEnvironment.crossOriginIsolated ? 'yes' : 'no'} · SharedArrayBuffer:{' '}
@@ -337,12 +370,16 @@ export function EvaluationApp() {
             </details>
           </section>
 
+          <SizeComparisonCard />
+          <BenchSummaryCard />
+
           <section className="card card-compact">
             <h2 className="card-title">Status legend</h2>
             <div className="legend-grid">
               <LegendItem badgeClass="badge-success" label="Pass / match" description="Validation succeeded or engines agree" />
-              <LegendItem badgeClass="badge-warning" label="Warning / missing" description="Needs attention or field absent" />
+              <LegendItem badgeClass="badge-warning" label="Warning / missing" description="Needs attention or field absent from both" />
               <LegendItem badgeClass="badge-error" label="Error / mismatch" description="Block or different values" />
+              <LegendItem badgeClass="badge-info" label="Only one engine" description="only current / only minimal" />
               <LegendItem badgeClass="badge-fallback" label="Fallback" description="Recovered via codec_width/codec_height" />
               <LegendItem badgeClass="badge-info" label="Info" description="Neutral metadata" />
               <LegendItem badgeClass="badge-diagnostic" label="Unsupported" description="Engine pending integration" />
@@ -402,10 +439,10 @@ export function EvaluationApp() {
                     </div>
                   </div>
                   <div className="btn-row">
-                    <button type="button" className="btn btn-primary" disabled={!selectedFile || isAnalyzing || !wasmEnvironment.canRunFfprobeWasm} onClick={handleAnalyze}>
+                    <button type="button" className="btn btn-primary" disabled={!selectedFile || isAnalyzing || (!wasmEnvironment.canRunFfprobeWasm && !wasmEnvironment.isSecureContext)} onClick={handleAnalyze}>
                       {isAnalyzing ? 'Analyzing…' : analyzeMode === 'compare' ? 'Compare engines' : 'Analyze video'}
                     </button>
-                    <button type="button" className="btn btn-secondary" disabled={engineResults.length === 0} onClick={() => exportAnalysisJson({ engineResults, comparisonReport, validation, policy })}>
+                    <button type="button" className="btn btn-secondary" disabled={engineResults.length === 0} onClick={() => exportAnalysisJson({ engineResults, comparisonReport, validation, policy, benchSummary })}>
                       Export JSON
                     </button>
                     <button type="button" className="btn btn-secondary" disabled={!comparisonReport} onClick={() => comparisonReport && exportComparisonCsv({ fileName: selectedFile?.name ?? 'file', comparison: comparisonReport })}>
@@ -636,6 +673,7 @@ export function EvaluationApp() {
                     browser: detectBrowser(),
                     tester: testerName,
                     bundleSummary: BUNDLE_TECHNICAL_DETAILS,
+                    benchSummary,
                     results: matrixResults,
                     comparison: comparisonReport,
                     engineResults,
@@ -732,6 +770,14 @@ export function EvaluationApp() {
               <h3>Reason</h3>
               <p>{recommendation.reason}</p>
             </div>
+            {recommendation.caveats?.length ? (
+              <div className="recommendation-section">
+                <h3>Caveats</h3>
+                <ul className="recommendation-list recommendation-list--risks">
+                  {recommendation.caveats.map((item) => <li key={item}>{item}</li>)}
+                </ul>
+              </div>
+            ) : null}
             <div className="grid-two-cols">
               <div className="recommendation-section">
                 <h3>Good for</h3>

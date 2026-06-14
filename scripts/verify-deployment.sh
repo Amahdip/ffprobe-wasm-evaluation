@@ -21,11 +21,15 @@ pass() {
 
 CURL_OPTS=()
 if [[ "${BASE_URL}" == https://* ]]; then
-  CURL_OPTS+=(-k)
+  CURL_OPTS=(-k)
 fi
 
 curl_deploy() {
-  curl "${CURL_OPTS[@]}" "$@"
+  if ((${#CURL_OPTS[@]})); then
+    curl "${CURL_OPTS[@]}" "$@"
+  else
+    curl "$@"
+  fi
 }
 
 # 1. App loads
@@ -88,6 +92,27 @@ if [[ -n "${FFPROBE_JS}" ]]; then
   pass "ffprobe-wasm lazy chunk reachable"
 else
   echo "WARN: ffprobe-wasm chunk not referenced in index.html (may load dynamically)"
+fi
+
+# 8. minimal-metadata engine artifacts
+MIN_JS_CODE=$(curl_deploy -sS -o /dev/null -w '%{http_code}' "${BASE_URL}/engines/minimal-metadata/ffprobe.js")
+[[ "${MIN_JS_CODE}" == "200" ]] || fail "minimal-metadata ffprobe.js missing (HTTP ${MIN_JS_CODE})"
+pass "minimal-metadata ffprobe.js reachable"
+
+MIN_WASM_CODE=$(curl_deploy -sS -o /dev/null -w '%{http_code}' "${BASE_URL}/engines/minimal-metadata/ffprobe.wasm")
+[[ "${MIN_WASM_CODE}" == "200" ]] || fail "minimal-metadata ffprobe.wasm missing (HTTP ${MIN_WASM_CODE})"
+pass "minimal-metadata ffprobe.wasm reachable"
+
+BENCH_CODE=$(curl_deploy -sS -o /dev/null -w '%{http_code}' "${BASE_URL}/bench/results-summary.json")
+[[ "${BENCH_CODE}" == "200" ]] || fail "bench results-summary.json missing (HTTP ${BENCH_CODE})"
+pass "bench results-summary.json reachable"
+
+# 9. compression on wasm (Netlify should send content-encoding when client accepts)
+ENC=$(curl_deploy -sSI -H 'Accept-Encoding: br, gzip' "${BASE_URL}/engines/minimal-metadata/ffprobe.wasm" | grep -i '^content-encoding:' || true)
+if [[ -n "${ENC}" ]]; then
+  pass "minimal wasm served with compression (${ENC})"
+else
+  echo "WARN: no content-encoding header on minimal wasm (Netlify may still compress at edge)"
 fi
 
 echo

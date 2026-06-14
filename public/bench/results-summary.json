@@ -1,0 +1,265 @@
+{
+  "generatedAt": "2026-06-14T13:11:59.392Z",
+  "sizes": {
+    "full": {
+      "dir": "/Users/amp/ffprobe-wasm/ffprobe-wasm/bench/dist/full/web",
+      "perFile": {
+        "ffprobe-wasm.js": {
+          "raw": 144694,
+          "gzip": 36951,
+          "brotli": 32287
+        },
+        "ffprobe-wasm.wasm": {
+          "raw": 2182191,
+          "gzip": 763615,
+          "brotli": 585429
+        },
+        "ffprobe-wasm.worker.js": {
+          "raw": 2983,
+          "gzip": 1230,
+          "brotli": 1076
+        }
+      },
+      "total": {
+        "raw": 2329868,
+        "gzip": 801796,
+        "brotli": 618792
+      }
+    },
+    "minimal": {
+      "dir": "/Users/amp/ffprobe-wasm/ffprobe-wasm/bench/dist/minimal/web",
+      "perFile": {
+        "ffprobe.js": {
+          "raw": 44364,
+          "gzip": 16114,
+          "brotli": 14329
+        },
+        "ffprobe.wasm": {
+          "raw": 898550,
+          "gzip": 475315,
+          "brotli": 396597
+        }
+      },
+      "total": {
+        "raw": 942914,
+        "gzip": 491429,
+        "brotli": 410926
+      }
+    },
+    "minimal-plus": {
+      "dir": "/Users/amp/ffprobe-wasm/ffprobe-wasm/bench/dist/minimal-plus/web",
+      "perFile": {
+        "ffprobe.js": {
+          "raw": 44395,
+          "gzip": 16138,
+          "brotli": 14351
+        },
+        "ffprobe.wasm": {
+          "raw": 2255993,
+          "gzip": 987807,
+          "brotli": 779943
+        }
+      },
+      "total": {
+        "raw": 2300388,
+        "gzip": 1003945,
+        "brotli": 794294
+      }
+    }
+  },
+  "runtime": {
+    "full": {
+      "usesSAB": true,
+      "usesPthread": true,
+      "hasWorkerGlue": true,
+      "present": true
+    },
+    "minimal": {
+      "usesSAB": false,
+      "usesPthread": false,
+      "hasWorkerGlue": false,
+      "present": true
+    },
+    "minimal-plus": {
+      "usesSAB": false,
+      "usesPthread": false,
+      "hasWorkerGlue": false,
+      "present": true
+    }
+  },
+  "aggregate": {
+    "format": {
+      "match": 22,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 3
+    },
+    "videoCodec": {
+      "match": 15,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 5,
+      "both_null": 5
+    },
+    "audioCodec": {
+      "match": 7,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 6,
+      "both_null": 12
+    },
+    "duration": {
+      "match": 22,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 3
+    },
+    "bitrate": {
+      "match": 22,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 3
+    },
+    "fps": {
+      "match": 0,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 20,
+      "both_null": 5
+    },
+    "width": {
+      "match": 20,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 5
+    },
+    "height": {
+      "match": 20,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 5
+    },
+    "codecWidth": {
+      "match": 20,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 5
+    },
+    "codecHeight": {
+      "match": 20,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 5
+    },
+    "hasAudio": {
+      "match": 22,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 3
+    },
+    "hasVideo": {
+      "match": 22,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 3
+    },
+    "videoStreams": {
+      "match": 22,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 3
+    },
+    "audioStreams": {
+      "match": 22,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 3
+    },
+    "pixelFormat": {
+      "match": 0,
+      "diff": 0,
+      "min_missing": 14,
+      "min_only": 1,
+      "both_null": 10
+    },
+    "rotation": {
+      "match": 1,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 0,
+      "both_null": 24
+    },
+    "colorPrimaries": {
+      "match": 0,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 20,
+      "both_null": 5
+    },
+    "colorTransfer": {
+      "match": 0,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 20,
+      "both_null": 5
+    },
+    "colorSpace": {
+      "match": 0,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 20,
+      "both_null": 5
+    },
+    "isHdr": {
+      "match": 0,
+      "diff": 0,
+      "min_missing": 0,
+      "min_only": 20,
+      "both_null": 5
+    },
+    "videoProfile": {
+      "match": 0,
+      "diff": 0,
+      "min_missing": 14,
+      "min_only": 0,
+      "both_null": 11
+    },
+    "videoLevel": {
+      "match": 1,
+      "diff": 0,
+      "min_missing": 13,
+      "min_only": 1,
+      "both_null": 10
+    }
+  },
+  "initMs": {
+    "full": 33.7,
+    "minimal": 3.02
+  },
+  "medianAnalyzeMs": {
+    "full": 0.491,
+    "minimal": 0.168
+  },
+  "regressedFields": [
+    "pixelFormat",
+    "videoProfile",
+    "videoLevel"
+  ],
+  "successCriteria": {
+    "muchSmallerRaw": true,
+    "under700KbBrotli": true,
+    "noCoreRegressions": true,
+    "noSabRequired": true
+  }
+}

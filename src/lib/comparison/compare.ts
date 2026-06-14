@@ -54,26 +54,24 @@ function buildFieldCells(
 function resolveRowStatus(cells: FieldComparisonCell[], tolerance?: number): FieldDiffStatus {
   if (cells.every((cell) => !cell.engineSuccess)) return 'engine_failed'
 
-  const successful = cells.filter((cell) => cell.engineSuccess)
-  const unavailableEngine = cells.some((cell) => {
-    const engine = getEngine(cell.engineId)
-    return engine && !engine.available
-  })
-
+  const successful = cells.filter((cell) => cell.engineSuccess && getEngine(cell.engineId)?.available)
   if (successful.length === 0) return 'engine_failed'
 
-  const presentValues = successful.filter((cell) => cell.present)
-  if (presentValues.length === 0) return 'missing'
+  const present = successful.filter((cell) => cell.present)
+  if (present.length === 0) return 'both_missing'
 
-  if (unavailableEngine && presentValues.length < cells.filter((c) => getEngine(c.engineId)?.available).length) {
-    return 'unsupported'
+  if (present.length === 1) {
+    const engineId = present[0].engineId
+    if (engineId === 'ffprobe-wasm') return 'only_current'
+    if (engineId === 'minimal-metadata-ffprobe') return 'only_minimal'
+    return 'missing'
   }
 
-  const reference = presentValues[0].rawValue
-  const allMatch = presentValues.every((cell) => valuesMatch(cell.rawValue, reference, tolerance))
+  const reference = present[0].rawValue
+  const allMatch = present.every((cell) => valuesMatch(cell.rawValue, reference, tolerance))
   if (!allMatch) return 'mismatch'
 
-  if (presentValues.length < successful.length) return 'missing'
+  if (present.length < successful.length) return 'missing'
 
   return 'match'
 }
@@ -201,6 +199,25 @@ export function buildEngineRecommendation(
     }
   }
 
+  const minimal = availableScores.find((s) => s.engineId === 'minimal-metadata-ffprobe')
+  const npm = availableScores.find((s) => s.engineId === 'ffprobe-wasm')
+
+  if (minimal && npm) {
+    return {
+      preferredEngineId: 'minimal-metadata-ffprobe',
+      preferredEngineName: 'minimal-metadata-ffprobe',
+      summary:
+        'Prefer minimal-metadata for upload preflight (pending browser validation): core metadata parity with smaller payload and no COOP/COEP.',
+      reasons: [
+        `Reliability: minimal ${minimal.scorePercent}% vs npm ${npm.scorePercent}% on this file`,
+        'Bundle: ~401 KB brotli vs ~604 KB rebuilt full / ~8.5 MB npm lazy chunk',
+        'Runtime: no SharedArrayBuffer / pthreads required',
+        'Caveat: pixelFormat, videoProfile, videoLevel not available without decoders',
+      ],
+      confidence: matrixSummaries.length > 0 ? 'high' : 'medium',
+    }
+  }
+
   const ranked = [...availableScores].sort((a, b) => {
     const matrixA = matrixSummaries.find((m) => m.engineId === a.engineId)?.successRatePercent ?? a.scorePercent
     const matrixB = matrixSummaries.find((m) => m.engineId === b.engineId)?.successRatePercent ?? b.scorePercent
@@ -293,6 +310,10 @@ export function diffStatusBadgeClass(status: FieldDiffStatus): string {
       return 'badge-success'
     case 'mismatch':
       return 'badge-error'
+    case 'only_current':
+    case 'only_minimal':
+      return 'badge-info'
+    case 'both_missing':
     case 'missing':
       return 'badge-warning'
     case 'unsupported':
@@ -310,6 +331,12 @@ export function diffStatusLabel(status: FieldDiffStatus): string {
       return 'match'
     case 'mismatch':
       return 'mismatch'
+    case 'only_current':
+      return 'only current'
+    case 'only_minimal':
+      return 'only minimal'
+    case 'both_missing':
+      return 'missing from both'
     case 'missing':
       return 'missing'
     case 'unsupported':

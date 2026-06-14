@@ -1,4 +1,12 @@
-export type FieldDiffStatus = 'match' | 'mismatch' | 'missing' | 'unsupported' | 'engine_failed'
+export type FieldDiffStatus =
+  | 'match'
+  | 'mismatch'
+  | 'only_current'
+  | 'only_minimal'
+  | 'both_missing'
+  | 'missing'
+  | 'unsupported'
+  | 'engine_failed'
 
 export interface ComparisonFieldDefinition {
   key: string

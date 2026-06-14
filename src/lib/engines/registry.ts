@@ -1,5 +1,6 @@
 import { ffprobeWasmEngine } from './ffprobe-wasm-engine'
 import { internalWasmEngine } from './internal-engine'
+import { minimalMetadataEngine } from './minimal-metadata-engine'
 import type { MediaAnalysisEngine } from './types'
 
 const engineRegistry = new Map<string, MediaAnalysisEngine>()
@@ -9,6 +10,7 @@ function registerEngine(engine: MediaAnalysisEngine) {
 }
 
 registerEngine(ffprobeWasmEngine)
+registerEngine(minimalMetadataEngine)
 registerEngine(internalWasmEngine)
 
 export function getEngine(id: string): MediaAnalysisEngine | undefined {

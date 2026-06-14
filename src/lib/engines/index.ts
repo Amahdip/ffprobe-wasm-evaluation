@@ -12,6 +12,7 @@ export {
   registerAdditionalEngine,
 } from './registry'
 export { ffprobeWasmEngine, analyzeWithFfprobeWasm } from './ffprobe-wasm-engine'
+export { minimalMetadataEngine } from './minimal-metadata-engine'
 export { internalWasmEngine } from './internal-engine'
 export {
   runAllRegisteredEngines,

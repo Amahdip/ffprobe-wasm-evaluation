@@ -45,7 +45,7 @@ export function resolveEngineSelection(
   selectedIds: string[],
 ): string[] {
   if (mode === 'compare') {
-    return getAllEngines().map((e) => e.id)
+    return getAllEngines().filter((e) => e.available).map((e) => e.id)
   }
   return selectedIds.length > 0 ? [selectedIds[0]] : ['ffprobe-wasm']
 }
