@@ -1,4 +1,4 @@
-export type ViewMode = 'overview' | 'technical'
+export type ViewMode = 'overview' | 'technical' | 'logic'
 
 interface ViewModeToggleProps {
   mode: ViewMode
@@ -7,20 +7,27 @@ interface ViewModeToggleProps {
 
 export function ViewModeToggle({ mode, onChange }: ViewModeToggleProps) {
   return (
-    <div className="view-mode-toggle" role="group" aria-label="View mode">
+    <div className="view-mode-toggle nav-tabs" role="group" aria-label="View mode">
       <button
         type="button"
         className={`tab-btn ${mode === 'overview' ? 'active' : ''}`}
         onClick={() => onChange('overview')}
       >
-        Overview Mode
+        Overview
+      </button>
+      <button
+        type="button"
+        className={`tab-btn ${mode === 'logic' ? 'active' : ''}`}
+        onClick={() => onChange('logic')}
+      >
+        Validation logic
       </button>
       <button
         type="button"
         className={`tab-btn ${mode === 'technical' ? 'active' : ''}`}
         onClick={() => onChange('technical')}
       >
-        Technical Mode
+        Technical
       </button>
     </div>
   )

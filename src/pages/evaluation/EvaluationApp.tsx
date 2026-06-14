@@ -50,6 +50,7 @@ import { productionRiskLevel } from '../../lib/evaluation/decision-comparison'
 
 import { ViewModeToggle, type ViewMode } from './components/view-mode-toggle'
 import { OverviewMode } from './components/overview-mode'
+import { PolicyLogicTab } from './components/policy-logic-tab'
 import { TechnicalMode } from './components/technical-mode'
 
 interface TestMatrix {
@@ -320,6 +321,8 @@ export function EvaluationApp() {
               onExportExecutiveSummary={handleExportExecutiveSummary}
               onExportFullReport={handleExportFullReport}
             />
+          ) : viewMode === 'logic' ? (
+            <PolicyLogicTab />
           ) : (
             <TechnicalMode
               wasmEnvironment={wasmEnvironment}
