@@ -1,0 +1,585 @@
+{
+  "version": "1.0.0",
+  "package": "ffprobe-wasm@0.3.1",
+  "defaults": {
+    "durationSeconds": 2,
+    "width": 640,
+    "height": 360,
+    "fps": 30
+  },
+  "categories": [
+    {
+      "id": "format",
+      "label": "Container formats",
+      "description": "Baseline H.264 + AAC at 30 fps unless noted."
+    },
+    {
+      "id": "video-codec",
+      "label": "Video codecs",
+      "description": "Codec detection across common containers."
+    },
+    {
+      "id": "audio-codec",
+      "label": "Audio codecs",
+      "description": "Audio stream detection and codec naming."
+    },
+    {
+      "id": "special",
+      "label": "Special cases",
+      "description": "Edge cases relevant to uploader preflight."
+    },
+    {
+      "id": "real-world",
+      "label": "Real-world samples",
+      "description": "Actual upload files copied from Downloads or external sources."
+    }
+  ],
+  "testCases": [
+    {
+      "id": "TC-FMT-001",
+      "category": "format",
+      "name": "MP4 container",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "format/mp4-h264-aac-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "mp4",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "fps": 30,
+        "width": 640,
+        "height": 360,
+        "durationSeconds": 2,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Baseline case; should work in all cross-origin-isolated browsers."
+    },
+    {
+      "id": "TC-FMT-002",
+      "category": "format",
+      "name": "MOV container",
+      "container": "mov",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "format/mov-h264-aac-30fps.mov",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "mov",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "fps": 30,
+        "width": 640,
+        "height": 360,
+        "durationSeconds": 2,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "QuickTime/MOV is commonly uploaded from mobile devices."
+    },
+    {
+      "id": "TC-FMT-003",
+      "category": "format",
+      "name": "WebM container",
+      "container": "webm",
+      "videoCodec": "vp9",
+      "audioCodec": "opus",
+      "specialCase": null,
+      "fixtureFile": "format/webm-vp9-opus-30fps.webm",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "webm",
+        "videoCodec": "vp9",
+        "audioCodec": "opus",
+        "fps": 30,
+        "width": 640,
+        "height": 360,
+        "durationSeconds": 2,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "WebM support depends on bundled libav build; verify VP9/Opus detection."
+    },
+    {
+      "id": "TC-FMT-004",
+      "category": "format",
+      "name": "MKV container",
+      "container": "mkv",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "format/mkv-h264-aac-30fps.mkv",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "matroska",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "fps": 30,
+        "width": 640,
+        "height": 360,
+        "durationSeconds": 2,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Matroska support may be partial in older libav builds."
+    },
+    {
+      "id": "TC-FMT-005",
+      "category": "format",
+      "name": "AVI container",
+      "container": "avi",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "format/avi-h264-aac-30fps.avi",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "avi",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "fps": 30,
+        "width": 640,
+        "height": 360,
+        "durationSeconds": 2,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Legacy uploads; codec fourcc mapping may differ."
+    },
+    {
+      "id": "TC-FMT-006",
+      "category": "format",
+      "name": "FLV container",
+      "container": "flv",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "format/flv-h264-aac-30fps.flv",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "flv",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "fps": 30,
+        "width": 640,
+        "height": 360,
+        "durationSeconds": 2,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Flash-era container; may be unsupported or partially supported."
+    },
+    {
+      "id": "TC-FMT-007",
+      "category": "format",
+      "name": "M4V container",
+      "container": "m4v",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "format/m4v-h264-aac-30fps.m4v",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "mp4",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "fps": 30,
+        "width": 640,
+        "height": 360,
+        "durationSeconds": 2,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Often identical to MP4; extension differs."
+    },
+    {
+      "id": "TC-VC-001",
+      "category": "video-codec",
+      "name": "H.264 video codec",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "video-codec/h264-aac-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "fps": 30,
+        "hasVideo": true
+      },
+      "browserNotes": "Primary production codec."
+    },
+    {
+      "id": "TC-VC-002",
+      "category": "video-codec",
+      "name": "H.265 / HEVC video codec",
+      "container": "mp4",
+      "videoCodec": "hevc",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "video-codec/hevc-aac-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "videoCodec": "hevc",
+        "audioCodec": "aac",
+        "fps": 30,
+        "hasVideo": true
+      },
+      "browserNotes": "HEVC detection required for preflight policy; playback support varies by browser."
+    },
+    {
+      "id": "TC-VC-003",
+      "category": "video-codec",
+      "name": "AV1 video codec",
+      "container": "mp4",
+      "videoCodec": "av1",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "video-codec/av1-aac-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "videoCodec": "av1",
+        "audioCodec": "aac",
+        "fps": 30,
+        "hasVideo": true
+      },
+      "browserNotes": "Should trigger AV1 preflight warning; encoding may be slow during fixture generation."
+    },
+    {
+      "id": "TC-VC-004",
+      "category": "video-codec",
+      "name": "VP8 video codec",
+      "container": "webm",
+      "videoCodec": "vp8",
+      "audioCodec": "opus",
+      "specialCase": null,
+      "fixtureFile": "video-codec/vp8-opus-30fps.webm",
+      "expected": {
+        "analyzeSuccess": true,
+        "videoCodec": "vp8",
+        "audioCodec": "opus",
+        "fps": 30,
+        "hasVideo": true
+      },
+      "browserNotes": "Common in older WebM uploads."
+    },
+    {
+      "id": "TC-VC-005",
+      "category": "video-codec",
+      "name": "VP9 video codec",
+      "container": "webm",
+      "videoCodec": "vp9",
+      "audioCodec": "opus",
+      "specialCase": null,
+      "fixtureFile": "video-codec/vp9-opus-30fps.webm",
+      "expected": {
+        "analyzeSuccess": true,
+        "videoCodec": "vp9",
+        "audioCodec": "opus",
+        "fps": 30,
+        "hasVideo": true
+      },
+      "browserNotes": "YouTube-style WebM uploads."
+    },
+    {
+      "id": "TC-AC-001",
+      "category": "audio-codec",
+      "name": "AAC audio",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": null,
+      "fixtureFile": "audio-codec/h264-aac-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "audioCodec": "aac",
+        "hasAudio": true
+      },
+      "browserNotes": "Default audio codec for MP4/MOV."
+    },
+    {
+      "id": "TC-AC-002",
+      "category": "audio-codec",
+      "name": "Opus audio",
+      "container": "webm",
+      "videoCodec": "vp9",
+      "audioCodec": "opus",
+      "specialCase": null,
+      "fixtureFile": "audio-codec/vp9-opus-30fps.webm",
+      "expected": {
+        "analyzeSuccess": true,
+        "audioCodec": "opus",
+        "hasAudio": true
+      },
+      "browserNotes": "Typical WebM pairing."
+    },
+    {
+      "id": "TC-AC-003",
+      "category": "audio-codec",
+      "name": "MP3 audio",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "mp3",
+      "specialCase": null,
+      "fixtureFile": "audio-codec/h264-mp3-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "audioCodec": "mp3",
+        "hasAudio": true
+      },
+      "browserNotes": "MP3 in MP4 is valid but less common; verify codec_name."
+    },
+    {
+      "id": "TC-AC-004",
+      "category": "audio-codec",
+      "name": "No audio stream",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": null,
+      "specialCase": "no-audio",
+      "fixtureFile": "audio-codec/h264-no-audio-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "hasAudio": false,
+        "hasVideo": true
+      },
+      "browserNotes": "Should trigger no_audio_stream preflight warning."
+    },
+    {
+      "id": "TC-SP-001",
+      "category": "special",
+      "name": "Variable frame rate",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "vfr",
+      "fixtureFile": "special/vfr-h264-aac.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "hasVideo": true,
+        "fps": null
+      },
+      "browserNotes": "FPS may be unreliable; avg_frame_rate vs r_frame_rate may disagree."
+    },
+    {
+      "id": "TC-SP-002",
+      "category": "special",
+      "name": "24 fps",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "24fps",
+      "fixtureFile": "special/h264-aac-24fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "fps": 24,
+        "durationSeconds": 2
+      },
+      "browserNotes": "Cinematic frame rate."
+    },
+    {
+      "id": "TC-SP-003",
+      "category": "special",
+      "name": "30 fps",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "30fps",
+      "fixtureFile": "special/h264-aac-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "fps": 30,
+        "durationSeconds": 2
+      },
+      "browserNotes": "Baseline frame rate."
+    },
+    {
+      "id": "TC-SP-004",
+      "category": "special",
+      "name": "60 fps",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "60fps",
+      "fixtureFile": "special/h264-aac-60fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "fps": 60,
+        "durationSeconds": 2
+      },
+      "browserNotes": "High frame rate; verify no false fps_too_high warnings with default config."
+    },
+    {
+      "id": "TC-SP-005",
+      "category": "special",
+      "name": "120 fps",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "120fps",
+      "fixtureFile": "special/h264-aac-120fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "fps": 120,
+        "durationSeconds": 2
+      },
+      "browserNotes": "Should trigger fps_too_high with default maxFps=120 or pass at boundary."
+    },
+    {
+      "id": "TC-SP-006",
+      "category": "special",
+      "name": "4K video",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "4k",
+      "fixtureFile": "special/h264-aac-4k-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "width": 3840,
+        "height": 2160,
+        "fps": 30
+      },
+      "browserNotes": "Large file read in browser; watch memory and analyze time.",
+      "optional": true
+    },
+    {
+      "id": "TC-SP-007",
+      "category": "special",
+      "name": "Long duration video",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "long-duration",
+      "fixtureFile": "special/h264-aac-long-30fps.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "durationSeconds": 600
+      },
+      "browserNotes": "Default fixture is 10 minutes; may trigger duration_exceeds_max depending on config.",
+      "optional": true
+    },
+    {
+      "id": "TC-SP-008",
+      "category": "special",
+      "name": "Corrupted video",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "corrupted",
+      "fixtureFile": "special/corrupted-truncated.mp4",
+      "expected": {
+        "analyzeSuccess": false
+      },
+      "browserNotes": "Should fail gracefully; uploader must not hang or crash."
+    },
+    {
+      "id": "TC-SP-009",
+      "category": "special",
+      "name": "Wrong extension",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "wrong-extension",
+      "fixtureFile": "special/h264-aac-wrong-ext.mp3",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "mp4",
+        "videoCodec": "h264"
+      },
+      "browserNotes": "Content is valid MP4 renamed to .mp3; tests magic-byte vs extension behavior."
+    },
+    {
+      "id": "TC-SP-010",
+      "category": "special",
+      "name": "Audio/video duration mismatch",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "av-duration-mismatch",
+      "fixtureFile": "special/av-duration-mismatch.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "durationSeconds": 4,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Should trigger av_duration_mismatch / inconsistent_metadata warnings."
+    },
+    {
+      "id": "TC-SP-011",
+      "category": "special",
+      "name": "Audio-only file",
+      "container": "mp3",
+      "videoCodec": null,
+      "audioCodec": "aac",
+      "specialCase": "audio-only",
+      "fixtureFile": "special/audio-only-aac.m4a",
+      "expected": {
+        "analyzeSuccess": true,
+        "hasVideo": false,
+        "hasAudio": true
+      },
+      "browserNotes": "Uploader should warn about missing video stream."
+    },
+    {
+      "id": "TC-SP-012",
+      "category": "special",
+      "name": "Video-only file",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": null,
+      "specialCase": "video-only",
+      "fixtureFile": "special/video-only-h264.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "hasVideo": true,
+        "hasAudio": false
+      },
+      "browserNotes": "Should trigger no_audio_stream warning."
+    },
+    {
+      "id": "TC-SP-013",
+      "category": "special",
+      "name": "Multiple audio tracks",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "multiple-audio",
+      "fixtureFile": "special/multiple-audio-tracks.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Should trigger multiple_audio_streams warning."
+    },
+    {
+      "id": "TC-RW-001",
+      "category": "real-world",
+      "name": "DELT GROWTH vertical video",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "vertical-video",
+      "fixtureFile": "real-world/delt-growth-vertical.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "mp4",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "width": 720,
+        "height": 1280,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Real-world 720×1280 vertical upload from ~/Downloads/DELT GROWTH.mp4. Duration ~24.6s; may show VFR suspicion.",
+      "optional": true
+    }
+  ]
+}
