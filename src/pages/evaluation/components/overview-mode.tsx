@@ -46,19 +46,19 @@ export function OverviewMode({
     let badgeClass = 'badge-success'
 
     switch (decision) {
-      case 'pass':
+      case 'PASS':
         text = 'PASS'
         badgeClass = 'badge-success'
         break
-      case 'warn':
+      case 'WARNING':
         text = 'WARNING'
         badgeClass = 'badge-warning'
         break
-      case 'soft_fail':
+      case 'SOFT FAIL':
         text = 'SOFT FAIL'
         badgeClass = 'badge-warning' // Amber warning, not red
         break
-      case 'block':
+      case 'BLOCKED':
         text = 'BLOCKED'
         badgeClass = 'badge-error'
         break
@@ -109,7 +109,7 @@ export function OverviewMode({
       <OverviewExecutiveSummary report={report} results={results} />
 
       {/* 3. DECISION COMPARISON */}
-      <OverviewComparisonTable />
+      <OverviewComparisonTable report={report} results={results} />
 
       {/* 4. ANALYZE A VIDEO */}
       <section className="card" style={{ marginBottom: 24 }}>

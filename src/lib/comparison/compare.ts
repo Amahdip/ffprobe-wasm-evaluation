@@ -68,7 +68,10 @@ function resolveRowStatus(cells: FieldComparisonCell[], tolerance?: number): Fie
   }
 
   const reference = present[0].rawValue
-  const allMatch = present.every((cell) => valuesMatch(cell.rawValue, reference, tolerance))
+  const referenceFormatted = present[0].value
+  const allMatch = present.every(
+    (cell) => valuesMatch(cell.rawValue, reference, tolerance) || cell.value === referenceFormatted
+  )
   if (!allMatch) return 'mismatch'
 
   if (present.length < successful.length) return 'missing'

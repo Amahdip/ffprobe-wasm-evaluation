@@ -8,27 +8,28 @@ export function deriveValidationDecision(
   policy: UploaderPolicy,
 ): ValidationDecision {
   if (analyzeError) {
-    return 'soft_fail'
+    return 'SOFT FAIL'
   }
 
   const blockCodes = new Set(policy.blockViolationCodes)
   const blockingErrors = errors.filter((entry) => blockCodes.has(entry.code))
 
   if (blockingErrors.length > 0) {
-    return 'block'
+    return 'BLOCKED'
   }
 
   if (errors.some((entry) => entry.code === 'analyze_failed')) {
-    return 'soft_fail'
+    return 'SOFT FAIL'
   }
 
   if (errors.length > 0) {
-    return 'soft_fail'
+    return 'SOFT FAIL'
   }
 
   if (warnings.length > 0) {
-    return 'warn'
+    return 'WARNING'
   }
 
-  return 'pass'
+  return 'PASS'
 }
+

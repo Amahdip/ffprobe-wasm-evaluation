@@ -26,28 +26,28 @@ export interface DecisionOutcomeReference {
 
 export const DECISION_OUTCOMES: DecisionOutcomeReference[] = [
   {
-    decision: 'pass',
+    decision: 'PASS',
     label: 'PASS',
     badgeClass: 'badge-success',
     meaning: 'No warnings or errors detected.',
     uploadAction: 'Proceed — browser preflight is clean.',
   },
   {
-    decision: 'warn',
+    decision: 'WARNING',
     label: 'WARNING',
     badgeClass: 'badge-warning',
     meaning: 'Non-blocking issues only (warnings or info).',
     uploadAction: 'Proceed with caution — review warnings; backend remains authoritative.',
   },
   {
-    decision: 'soft_fail',
+    decision: 'SOFT FAIL',
     label: 'SOFT FAIL',
     badgeClass: 'badge-warning',
     meaning: 'Analysis failed or non-blocking errors detected.',
     uploadAction: 'Do not block upload solely for this — rely on backend/Akuma validation.',
   },
   {
-    decision: 'block',
+    decision: 'BLOCKED',
     label: 'BLOCKED',
     badgeClass: 'badge-error',
     meaning: 'Hard policy violation (configured block codes).',

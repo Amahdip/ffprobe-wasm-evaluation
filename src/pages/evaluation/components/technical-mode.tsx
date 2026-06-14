@@ -668,6 +668,33 @@ export function TechnicalMode({
           </section>
         </div>
       )}
+      {/* Export Section */}
+      <section className="card" style={{ marginTop: 24 }}>
+        <h2 className="card-title">Export Technical Data</h2>
+        <div className="btn-row" style={{ marginTop: 16 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onExportFullReport}
+          >
+            Export Full Technical Report
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onExportMatrixCsv}
+          >
+            Export Matrix CSV
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onExportJson}
+          >
+            Export Raw JSON
+          </button>
+        </div>
+      </section>
     </div>
   )
 }

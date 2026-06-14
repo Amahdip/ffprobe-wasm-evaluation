@@ -6,7 +6,7 @@ export type ResolutionCategory = 'SD' | 'HD' | 'FHD' | 'QHD' | '4K+' | 'unknown'
 
 export type UploadSizeCategory = 'tiny' | 'small' | 'medium' | 'large' | 'very_large'
 
-export type ValidationDecision = 'pass' | 'warn' | 'soft_fail' | 'block'
+export type ValidationDecision = 'PASS' | 'WARNING' | 'SOFT FAIL' | 'BLOCKED'
 
 export interface StreamDimensions {
   width: number | null
@@ -161,38 +161,9 @@ export interface FileContext {
   fileSizeBytes?: number
 }
 
-export const DEFAULT_UPLOADER_POLICY: UploaderPolicy = {
-  maxDurationSeconds: 3600,
-  minDurationSeconds: 3,
-  maxBitrateBps: 50_000_000,
-  maxFps: 120,
-  minFps: 1,
-  allowedContainers: ['mp4', 'mov', 'webm', 'mkv', 'm4v', 'matroska'],
-  allowedVideoCodecs: ['h264', 'hevc', 'av1', 'vp8', 'vp9'],
-  allowedAudioCodecs: ['aac', 'opus', 'mp3'],
-  warnVideoCodecs: ['av1', 'hevc', 'vp8', 'vp9'],
-  warnAudioCodecs: [],
-  maxAudioVideoDurationDeltaSeconds: 1,
-  maxContainerStreamDurationDeltaSeconds: 2,
-  maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
-  minWidth: 144,
-  minHeight: 144,
-  maxWidth: 7680,
-  maxHeight: 7680,
-  minAudioBitrateBps: 32_000,
-  maxAudioBitrateBps: 512_000,
-  standardAudioSampleRates: [44100, 48000],
-  warnMonoAudio: true,
-  warnSurroundAudio: true,
-  warnVp8Vp9: true,
-  vfrRelativeThreshold: 0.03,
-  minBitrateBpsPerMegapixel: 50_000,
-  standardPixelFormats: ['yuv420p', 'yuvj420p'],
-  standardAspectRatioTolerance: 0.04,
-  warnUploadSizeCategories: ['large', 'very_large'],
-  blockViolationCodes: ['file_too_large', 'duration_exceeds_max'],
-  enableResolutionValidation: false,
-}
+import { preflightPolicy } from '../../config/preflightPolicy'
+
+export const DEFAULT_UPLOADER_POLICY: UploaderPolicy = preflightPolicy
 
 /** @deprecated use DEFAULT_UPLOADER_POLICY */
 export const DEFAULT_PREFLIGHT_CONFIG = DEFAULT_UPLOADER_POLICY

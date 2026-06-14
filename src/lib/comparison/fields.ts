@@ -26,8 +26,14 @@ export const COMPARISON_FIELDS: ComparisonFieldDefinition[] = [
       const n = v as number | null
       return n != null ? `${Math.round(n / 1000)} kbps` : '—'
     },
+    tolerance: 10000, // 10 kbps tolerance
   },
-  { key: 'fps', label: 'FPS', format: (v) => formatNumber(v as number | null, 3) },
+  {
+    key: 'fps',
+    label: 'FPS',
+    format: (v) => formatNumber(v as number | null, 3),
+    tolerance: 0.01, // 0.01 fps tolerance
+  },
   { key: 'width', label: 'Width', format: (v) => formatNumber(v as number | null, 0) },
   { key: 'height', label: 'Height', format: (v) => formatNumber(v as number | null, 0) },
   {

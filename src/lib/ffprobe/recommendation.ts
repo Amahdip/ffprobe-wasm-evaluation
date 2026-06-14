@@ -74,13 +74,13 @@ export function buildRecommendationFromValidation(_result: ValidationResult | nu
 
 export function decisionBadgeClass(decision: import('./types').ValidationDecision): string {
   switch (decision) {
-    case 'pass':
+    case 'PASS':
       return 'badge badge-success'
-    case 'warn':
+    case 'WARNING':
       return 'badge badge-warning'
-    case 'soft_fail':
+    case 'SOFT FAIL':
       return 'badge badge-warning' // Amber warning, not red
-    case 'block':
+    case 'BLOCKED':
       return 'badge badge-error'
     default:
       return 'badge badge-warning'

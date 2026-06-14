@@ -1,46 +1,16 @@
 import { getAllEngines } from '../../../lib/engines'
+import { buildDecisionComparisonRows } from '../../../lib/evaluation/decision-comparison'
+import type { EngineComparisonReport } from '../../../lib/comparison'
+import type { AnalysisResult } from '../../../lib/engines/types'
 
-export function OverviewComparisonTable() {
+interface OverviewComparisonTableProps {
+  report: EngineComparisonReport | null
+  results: AnalysisResult[]
+}
+
+export function OverviewComparisonTable({ report, results }: OverviewComparisonTableProps) {
   const engines = getAllEngines().filter((engine) => engine.available)
-
-  // Hardcoded profiles representing the overall decision characteristics for available engines
-  const tableData = [
-    {
-      criteria: 'Payload Size',
-      values: {
-        'ffprobe-wasm': '2.03 MB brotli (~2.9 MB gzip)',
-        'minimal-metadata-ffprobe': '401 KB brotli (~480 KB gzip)',
-      },
-    },
-    {
-      criteria: 'Metadata Coverage',
-      values: {
-        'ffprobe-wasm': 'Core Metadata: Complete\nNice-to-have Metadata: Complete',
-        'minimal-metadata-ffprobe': 'Core Metadata: Complete\nNice-to-have: Partial',
-      },
-    },
-    {
-      criteria: 'Browser Requirements',
-      values: {
-        'ffprobe-wasm': 'SharedArrayBuffer / COOP-COEP (Secure Context Only)',
-        'minimal-metadata-ffprobe': 'Standard Browser (No SharedArrayBuffer / COOP-COEP)',
-      },
-    },
-    {
-      criteria: 'Core Reliability',
-      values: {
-        'ffprobe-wasm': 'High (Standard WebAssembly build)',
-        'minimal-metadata-ffprobe': 'High (matches core fields)',
-      },
-    },
-    {
-      criteria: 'Recommendation',
-      values: {
-        'ffprobe-wasm': 'Backup / fallback isolation context only',
-        'minimal-metadata-ffprobe': 'Recommended for pre-upload warnings',
-      },
-    },
-  ]
+  const rows = buildDecisionComparisonRows(report, results)
 
   return (
     <section className="card">
@@ -62,21 +32,21 @@ export function OverviewComparisonTable() {
             </tr>
           </thead>
           <tbody>
-            {tableData.map((row) => (
-              <tr key={row.criteria}>
-                <td style={{ fontWeight: 600 }}>{row.criteria}</td>
+            {rows.map((row) => (
+              <tr key={row.id}>
+                <td style={{ fontWeight: 600 }}>{row.label}</td>
                 {engines.map((engine) => {
-                  const val = row.values[engine.id as keyof typeof row.values] || '—'
+                  const val = row.values[engine.id] || '—'
                   const isRecommended =
-                    row.criteria === 'Recommendation' &&
+                    row.id === 'risk' &&
                     engine.id === 'minimal-metadata-ffprobe'
                   const isFallback =
-                    row.criteria === 'Recommendation' &&
+                    row.id === 'risk' &&
                     engine.id === 'ffprobe-wasm'
 
                   return (
                     <td
-                      key={`${row.criteria}-${engine.id}`}
+                      key={`${row.id}-${engine.id}`}
                       style={{ whiteSpace: 'pre-line' }}
                     >
                       {isRecommended ? (
@@ -99,3 +69,4 @@ export function OverviewComparisonTable() {
     </section>
   )
 }
+
