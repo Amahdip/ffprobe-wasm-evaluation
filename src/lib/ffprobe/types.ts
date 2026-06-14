@@ -163,7 +163,7 @@ export interface FileContext {
 
 export const DEFAULT_UPLOADER_POLICY: UploaderPolicy = {
   maxDurationSeconds: 3600,
-  minDurationSeconds: 1,
+  minDurationSeconds: 3,
   maxBitrateBps: 50_000_000,
   maxFps: 120,
   minFps: 1,
