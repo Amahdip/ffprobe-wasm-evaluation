@@ -201,20 +201,94 @@ export function buildEngineRecommendation(
 
   const minimal = availableScores.find((s) => s.engineId === 'minimal-metadata-ffprobe')
   const npm = availableScores.find((s) => s.engineId === 'ffprobe-wasm')
+  const minimalResult = results.find((r) => r.engineId === 'minimal-metadata-ffprobe')
+  const npmResult = results.find((r) => r.engineId === 'ffprobe-wasm')
 
   if (minimal && npm) {
+    if (!minimalResult?.success && npmResult?.success) {
+      return {
+        preferredEngineId: 'ffprobe-wasm',
+        preferredEngineName: 'ffprobe-wasm',
+        summary:
+          'Use npm ffprobe-wasm for this file — minimal-metadata failed to analyze. Do not prefer a failing engine.',
+        reasons: [
+          minimalResult?.error ?? 'minimal-metadata analyze failed on this file',
+          `Reliability on this file: npm ${npm.scorePercent}% vs minimal 0%`,
+          'Verify /engines/minimal-metadata/ffprobe.wasm is deployed if minimal should run',
+        ],
+        confidence: 'high',
+      }
+    }
+
+    if (!npmResult?.success && minimalResult?.success) {
+      return {
+        preferredEngineId: 'minimal-metadata-ffprobe',
+        preferredEngineName: 'minimal-metadata-ffprobe',
+        summary:
+          'minimal-metadata succeeded on this file; npm ffprobe-wasm failed (often COOP/COEP or SharedArrayBuffer).',
+        reasons: [
+          npmResult?.error ?? 'npm ffprobe-wasm analyze failed',
+          `Reliability on this file: minimal ${minimal.scorePercent}% vs npm 0%`,
+          'Smaller payload and no cross-origin isolation required for minimal',
+        ],
+        confidence: 'high',
+      }
+    }
+
+    if (!minimalResult?.success && !npmResult?.success) {
+      return {
+        preferredEngineId: null,
+        preferredEngineName: null,
+        summary:
+          'No browser engine succeeded on this file. Use backend/Akuma as source of truth — do not block upload on browser failure alone.',
+        reasons: [
+          minimalResult?.error ?? 'minimal-metadata failed',
+          npmResult?.error ?? 'npm ffprobe-wasm failed',
+        ],
+        confidence: 'low',
+      }
+    }
+
+    if (npm.scorePercent > minimal.scorePercent + 15) {
+      return {
+        preferredEngineId: 'ffprobe-wasm',
+        preferredEngineName: 'ffprobe-wasm',
+        summary:
+          'npm ffprobe-wasm is more reliable on this file. Consider minimal-metadata only after parity improves.',
+        reasons: [
+          `Reliability on this file: npm ${npm.scorePercent}% vs minimal ${minimal.scorePercent}%`,
+          'npm detects more fields (pixelFormat, profile, level)',
+          'Trade-off: npm lazy chunk ~2.9 MiB gzip and requires COOP/COEP',
+        ],
+        confidence: matrixSummaries.length > 0 ? 'high' : 'medium',
+      }
+    }
+
+    if (minimal.scorePercent >= npm.scorePercent - 10) {
+      return {
+        preferredEngineId: 'minimal-metadata-ffprobe',
+        preferredEngineName: 'minimal-metadata-ffprobe',
+        summary:
+          'Prefer minimal-metadata for upload preflight when core metadata parity holds: smaller payload, no COOP/COEP.',
+        reasons: [
+          `Reliability on this file: minimal ${minimal.scorePercent}% vs npm ${npm.scorePercent}%`,
+          'Bundle: ~401 KB brotli vs ~2.9 MiB npm lazy chunk',
+          'Runtime: no SharedArrayBuffer / pthreads required',
+          'Caveat: pixelFormat, videoProfile, videoLevel may be absent without decoders',
+        ],
+        confidence: matrixSummaries.length > 0 ? 'high' : 'medium',
+      }
+    }
+
     return {
-      preferredEngineId: 'minimal-metadata-ffprobe',
-      preferredEngineName: 'minimal-metadata-ffprobe',
-      summary:
-        'Prefer minimal-metadata for upload preflight (pending browser validation): core metadata parity with smaller payload and no COOP/COEP.',
+      preferredEngineId: 'ffprobe-wasm',
+      preferredEngineName: 'ffprobe-wasm',
+      summary: 'npm ffprobe-wasm leads on metadata coverage for this file.',
       reasons: [
-        `Reliability: minimal ${minimal.scorePercent}% vs npm ${npm.scorePercent}% on this file`,
-        'Bundle: ~401 KB brotli vs ~604 KB rebuilt full / ~8.5 MB npm lazy chunk',
-        'Runtime: no SharedArrayBuffer / pthreads required',
-        'Caveat: pixelFormat, videoProfile, videoLevel not available without decoders',
+        `Reliability on this file: npm ${npm.scorePercent}% vs minimal ${minimal.scorePercent}%`,
+        'Use minimal-metadata after field parity improves or for COOP-free deployments',
       ],
-      confidence: matrixSummaries.length > 0 ? 'high' : 'medium',
+      confidence: 'medium',
     }
   }
 

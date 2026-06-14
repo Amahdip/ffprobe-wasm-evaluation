@@ -11,23 +11,27 @@ export function SizeComparisonCard() {
         <table className="workout-table">
           <thead>
             <tr>
-              <th>Engine</th>
-              <th>Raw</th>
-              <th>gzip</th>
-              <th>brotli</th>
-              <th>SAB / COOP-COEP</th>
-              <th>Notes</th>
+              <th style={{ width: '25%', whiteSpace: 'nowrap' }}>Engine</th>
+              <th style={{ width: '10%', whiteSpace: 'nowrap' }}>Raw</th>
+              <th style={{ width: '10%', whiteSpace: 'nowrap' }}>Gzip</th>
+              <th style={{ width: '10%', whiteSpace: 'nowrap' }}>Brotli</th>
+              <th style={{ width: '15%', whiteSpace: 'nowrap' }}>SAB / COOP-COEP</th>
+              <th style={{ width: '30%' }}>Notes</th>
             </tr>
           </thead>
           <tbody>
             {ENGINE_SIZE_ROWS.map((row: EngineSizeRow) => (
               <tr key={row.id}>
-                <td>{row.label}</td>
-                <td>{row.raw}</td>
-                <td>{row.gzip}</td>
-                <td>{row.brotli}</td>
-                <td>{row.coopCoepRequired ? 'required' : 'not required'}</td>
-                <td className="status-text">{row.notes}</td>
+                <td style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{row.label}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>{row.raw}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>{row.gzip}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>{row.brotli}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  <span className={row.coopCoepRequired ? 'badge badge-error' : 'badge badge-success'} style={{ fontSize: '11px', padding: '2px 6px', fontWeight: 600 }}>
+                    {row.coopCoepRequired ? 'required' : 'not required'}
+                  </span>
+                </td>
+                <td className="status-text" style={{ fontSize: '12px' }}>{row.notes}</td>
               </tr>
             ))}
           </tbody>

@@ -39,7 +39,7 @@ export function buildRecommendationFromValidation(_result: ValidationResult | nu
   const risks = [
     'pixelFormat, videoProfile, videoLevel unavailable in minimal (decoders removed)',
     'Corrupted/truncated files return in-band errors — do not block upload on probe failure alone',
-    'Backend / Akuma validation remains authoritative',
+    'Backend/Akuma remains the source of truth',
   ]
 
   const caveats = [
@@ -49,10 +49,10 @@ export function buildRecommendationFromValidation(_result: ValidationResult | nu
   ]
 
   const reason =
-    'Use optimized minimal-metadata ffprobe as the preferred pre-upload analysis engine, pending browser validation. It preserves core preflight metadata while significantly reducing payload and removing SharedArrayBuffer / COOP-COEP requirements.'
+    'Recommended for pre-upload warnings, not authoritative validation. Backend/Akuma remains the source of truth. It preserves core preflight metadata while significantly reducing payload and removing SharedArrayBuffer / COOP-COEP requirements.'
 
   return {
-    recommendationLabel: 'Prefer minimal-metadata (pending validation)',
+    recommendationLabel: 'Recommended for pre-upload warnings',
     reason,
     goodFor,
     risks,
@@ -79,14 +79,29 @@ export function decisionBadgeClass(decision: import('./types').ValidationDecisio
     case 'warn':
       return 'badge badge-warning'
     case 'soft_fail':
-      return 'badge badge-info'
+      return 'badge badge-warning' // Amber warning, not red
     case 'block':
       return 'badge badge-error'
     default:
-      return 'badge badge-info'
+      return 'badge badge-warning'
   }
 }
 
 export function recommendationBadgeClass(): string {
   return 'badge badge-success'
 }
+
+export function getFriendlyContainerName(formatName: string | null): string {
+  if (!formatName) return '—'
+  const lower = formatName.toLowerCase()
+  if (lower.includes('mp4') || lower === 'mov,mp4,m4a,3gp,3g2,mj2') return 'MP4'
+  if (lower.includes('mov')) return 'MOV'
+  if (lower.includes('webm')) return 'WebM'
+  if (lower.includes('matroska') || lower.includes('mkv')) return 'MKV'
+  if (lower.includes('avi')) return 'AVI'
+  if (lower.includes('flv')) return 'FLV'
+  if (lower.includes('mp3')) return 'MP3'
+  return formatName.split(',').map(s => s.trim().toUpperCase()).join(' / ')
+}
+
+

@@ -222,3 +222,74 @@ ${engineRec.reasons.map((r) => `- ${r}`).join('\n')}` : 'Run compare mode on a f
     'text/markdown',
   )
 }
+
+export interface ExecutiveSummaryExportOptions {
+  tester: string
+  browser: string
+  fileName?: string | null
+  fileSize?: string | null
+  decision?: string | null
+  friendlyContainer?: string | null
+  warnings?: string[]
+  productionRisk?: string | null
+  productionRiskExplanation?: string | null
+}
+
+export function exportExecutiveSummary(options: ExecutiveSummaryExportOptions) {
+  const fileSection = options.fileName
+    ? `
+## Upload Analysis Details
+- **Sample File Name**: ${options.fileName}
+- **Sample File Size**: ${options.fileSize || 'Unknown'}
+- **Uploader Preflight Status**: **${options.decision?.toUpperCase() || '—'}**
+- **Container Format**: ${options.friendlyContainer || '—'}
+- **Warnings / Observations**:
+${options.warnings && options.warnings.length > 0 
+  ? options.warnings.map(w => `  - ${w}`).join('\n') 
+  : '  - None detected'}
+`
+    : '\n*No sample file was analyzed during this session. Output is based on overall engine capability comparison.*'
+
+  const markdown = `# Aparat Preflight Engine Decision - Executive Summary
+
+## Recommendation
+**Recommended Engine**: Minimal Metadata Engine (minimal-metadata-ffprobe)  
+**Confidence**: High  
+**Status**: Recommended for pre-upload warnings, not authoritative validation. Backend/Akuma remains the source of truth.
+
+### Key Rationale
+Provides all required uploader preflight metadata while reducing payload size (~401 KB brotli) and removing SharedArrayBuffer / COOP-COEP requirements.
+
+---
+
+## Executive Summary Metrics
+- **Payload Size**: ~401 KB brotli (~480 KB gzip)
+- **Metadata Coverage**: Core Metadata: Complete / Nice-to-have Metadata: Partial
+- **Browser Requirements**: No SharedArrayBuffer or cross-origin isolation (COOP/COEP) required
+- **Production Risk**: ${options.productionRisk?.toUpperCase() || 'LOW'} (${options.productionRiskExplanation || 'Core metadata aligned - suitable as warning layer.'})
+
+---
+
+## Decision Comparison Matrix
+| Criteria | Standard ffprobe-wasm | Minimal Metadata Engine |
+| --- | --- | --- |
+| **Payload Size** | 2.03 MB brotli | 401 KB brotli |
+| **Metadata Coverage** | Core Metadata: Complete<br>Nice-to-have Metadata: Complete | Core Metadata: Complete<br>Nice-to-have Metadata: Partial |
+| **Browser Requirements** | SharedArrayBuffer / COOP-COEP | Standard Browser (No SAB) |
+| **Core Reliability** | High | High (matches core fields) |
+| **Recommendation** | Backup / Fallback | Recommended for pre-upload warnings |
+
+---
+${fileSection}
+
+---
+*Report exported on ${new Date().toLocaleString()} by ${options.tester || 'Amir'} via ${options.browser}.*
+`
+
+  downloadTextFile(
+    `preflight-executive-summary-${new Date().toISOString().slice(0, 10)}.md`,
+    markdown,
+    'text/markdown',
+  )
+}
+

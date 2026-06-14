@@ -52,10 +52,19 @@ export interface MinimalProbeResult {
 }
 
 export interface MinimalWasmModule {
-  FS: {
-    writeFile: (path: string, data: Uint8Array) => void
-    unlink: (path: string) => void
+  FS?: {
+    writeFile?: (path: string, data: Uint8Array) => void
+    unlink?: (path: string) => void
   }
+  FS_createDataFile?: (
+    parent: string,
+    name: string,
+    data: Uint8Array,
+    canRead: boolean,
+    canWrite: boolean,
+    canOwn: boolean,
+  ) => void
+  FS_unlink?: (path: string) => void
   ccall: (name: string, returnType: string, argTypes: string[], args: unknown[]) => string
 }
 

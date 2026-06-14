@@ -62,6 +62,32 @@ function sanitizePath(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]/g, '_')
 }
 
+function writeVirtualFile(module: MinimalWasmModule, virtualPath: string, data: Uint8Array): void {
+  if (module.FS?.writeFile) {
+    module.FS.writeFile(virtualPath, data)
+    return
+  }
+
+  if (module.FS_createDataFile) {
+    const lastSlash = virtualPath.lastIndexOf('/')
+    const parent = lastSlash >= 0 ? virtualPath.slice(0, lastSlash) || '/' : '/'
+    const name = lastSlash >= 0 ? virtualPath.slice(lastSlash + 1) : virtualPath
+    module.FS_createDataFile(parent, name, data, true, true, true)
+    return
+  }
+
+  throw new Error('Minimal ffprobe module has no MEMFS write API (FS.writeFile or FS_createDataFile)')
+}
+
+function unlinkVirtualFile(module: MinimalWasmModule, virtualPath: string): void {
+  if (module.FS_unlink) {
+    module.FS_unlink(virtualPath)
+    return
+  }
+
+  module.FS?.unlink?.(virtualPath)
+}
+
 export async function analyzeWithMinimalFfprobe(file: File): Promise<{
   probe: MinimalProbeResult
   timings: FfprobeTimings
@@ -81,8 +107,11 @@ export async function analyzeWithMinimalFfprobe(file: File): Promise<{
 
   try {
     const data = new Uint8Array(await file.arrayBuffer())
-    Module.FS.writeFile(virtualPath, data)
+    writeVirtualFile(Module, virtualPath, data)
     const json = Module.ccall('get_file_info_json', 'string', ['string'], [virtualPath])
+    if (!json) {
+      throw new Error('Minimal ffprobe returned an empty response')
+    }
     const probe = JSON.parse(json) as MinimalProbeResult
     const analyzeMs = performance.now() - analyzeStart
 
@@ -97,7 +126,7 @@ export async function analyzeWithMinimalFfprobe(file: File): Promise<{
     }
   } finally {
     try {
-      Module.FS.unlink(virtualPath)
+      unlinkVirtualFile(Module, virtualPath)
     } catch {
       // ignore cleanup errors
     }

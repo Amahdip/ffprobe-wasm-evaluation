@@ -10,7 +10,8 @@ npm run dev            # core fixtures are already in public/fixtures/
 ```
 
 Optional: `npm run fixtures:generate` only if you changed the test matrix and need to recreate clips (requires ffmpeg).
-```
+
+````
 
 Open the URL printed by Vite (default `http://localhost:5173`).
 
@@ -20,7 +21,7 @@ Production includes **committed core test videos** in `public/fixtures/` (~1.5 M
 
 ```bash
 npm run build:deploy   # verify fixtures + production build
-```
+````
 
 To **regenerate** core fixtures after matrix changes (requires ffmpeg):
 
@@ -42,11 +43,11 @@ Optional bundle analysis: `npm run build:analyze`.
 
 ### Fixture tiers
 
-| Tier | Command | Contents |
-|------|---------|----------|
-| **Core** (default) | `npm run fixtures:generate` | Short synthetic clips (~2s, 640×360) — format, codec, special cases |
-| **Optional heavy** | `npm run fixtures:generate:optional` | 4K + 10-minute samples (large) |
-| **Real-world** | `npm run samples:import-downloads` | DELT GROWTH, Big Buck Bunny from ~/Downloads |
+| Tier               | Command                              | Contents                                                            |
+| ------------------ | ------------------------------------ | ------------------------------------------------------------------- |
+| **Core** (default) | `npm run fixtures:generate`          | Short synthetic clips (~2s, 640×360) — format, codec, special cases |
+| **Optional heavy** | `npm run fixtures:generate:optional` | 4K + 10-minute samples (large)                                      |
+| **Real-world**     | `npm run samples:import-downloads`   | DELT GROWTH, Big Buck Bunny from ~/Downloads                        |
 
 Optional fixtures are marked `"optional": true` in the test matrix and skipped unless you enable **Include optional fixtures** in the UI.
 
@@ -89,7 +90,7 @@ docs/DEPLOYMENT.md        # Netlify deploy checklist
 
 ## Recommendation (summary)
 
-**Use ffprobe-wasm with fallback** as a lazy-loaded, best-effort pre-upload warning layer. Compare against the internal WASM package when available. Backend/Akuma remains authoritative.
+**Use ffprobe-wasm with fallback** as a lazy-loaded, best-effort pre-upload warning layer. Compare against the Taghi Engine package when available. Backend/Akuma remains authoritative.
 
 ## Requirements
 
