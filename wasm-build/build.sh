@@ -76,7 +76,6 @@ if [ ! -f "$FFMPEG_PREFIX/lib/libavformat.a" ]; then
         --enable-avutil \
         --enable-protocol=file \
         --enable-demuxer=mov,matroska,webm_dash_manifest,avi,flv,mp3,wav,aac,ogg,concat \
-        --enable-decoder=aac,mp3,vorbis,opus,flac,h264,hevc,vp8,vp9,av1,mpeg4,mpeg2video,mjpeg,png,gif,pcm_s16le,pcm_s24le,pcm_f32le,theora,wmv3,vc1,rawvideo,prores \
         --enable-parser=h264,hevc,aac,mpegaudio,vp8,vp9,av1,mpeg4video,mjpeg \
         --disable-autodetect \
         --disable-hwaccels \
@@ -85,8 +84,8 @@ if [ ! -f "$FFMPEG_PREFIX/lib/libavformat.a" ]; then
         --disable-encoders \
         --disable-muxers \
         --disable-bsfs \
-        --extra-cflags="-O2" \
-        --extra-ldflags="-O2"
+        --extra-cflags="-Oz" \
+        --extra-ldflags="-Oz"
 
     echo "=== Building FFmpeg ==="
     emmake make -j$(sysctl -n hw.ncpu 2>/dev/null || echo 4)
@@ -105,10 +104,10 @@ mkdir -p "$OUTPUT_DIR"
 emcc "$SCRIPT_DIR/ffprobe-mini.c" \
     -I"$FFMPEG_PREFIX/include" \
     -L"$FFMPEG_PREFIX/lib" \
-    -lavformat -lavcodec -lswresample -lavutil \
+    -lavformat -lavcodec -lavutil \
     -lm \
     -o "$OUTPUT_DIR/ffprobe.js" \
-    -O2 \
+    -Oz \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="createFFprobe" \
     -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_free","_malloc"]' \
