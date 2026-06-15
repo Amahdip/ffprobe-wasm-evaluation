@@ -50,8 +50,8 @@
 | --- | --- |
 | Main bundle (gzip) | `{e.g. 63 KiB}` |
 | ffprobe-wasm lazy chunk (gzip) | `{e.g. 2.89 MiB}` |
-| ffprobe-wasm lazy chunk (brotli) | `{e.g. 2.03 MiB}` |
-| Standalone `.wasm` emitted | `{Yes / No — No for Vite build}` |
+| minimal-metadata-ffprobe lazy chunk (gzip) | `{e.g. 510 KiB}` |
+| Standalone `.wasm` emitted | `{Yes / No — Yes for minimal-metadata}` |
 | Lazy loaded | `{Yes / No}` |
 | SharedArrayBuffer required | Yes |
 | COOP/COEP required | Yes |

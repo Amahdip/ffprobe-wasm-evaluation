@@ -36,15 +36,16 @@ After a production build, run:
 npm run analyze
 ```
 
-This prints raw, gzip, and brotli sizes for every file in `dist/`.
+This prints raw and gzip sizes for every file in `dist/`.
 
 ### Latest build results (Vite 8, Jun 2026)
 
-| File | Raw | Gzip | Brotli | Notes |
-| --- | --- | --- | --- | --- |
-| `assets/index-*.js` (main) | ~198 KiB | ~63 KiB | ~53 KiB | React app shell + preflight helpers |
-| `assets/ffprobe-wasm-*.js` | ~8.19 MiB | ~2.89 MiB | ~2.03 MiB | Lazy-loaded chunk |
-| `assets/index-*.css` | ~2.2 KiB | ~0.9 KiB | ~0.7 KiB | Test page styles |
+| File | Raw | Gzip | Notes |
+| --- | --- | --- | --- |
+| `assets/index-*.js` (main) | ~198 KiB | ~63 KiB | React app shell + preflight helpers |
+| `assets/ffprobe-wasm-*.js` | ~8.19 MiB | ~2.89 MiB | Lazy-loaded chunk |
+| `engines/minimal-metadata/ffprobe.wasm` | ~1.01 MiB | ~510 KiB | Optimized minimal metadata engine |
+| `assets/index-*.css` | ~2.2 KiB | ~0.9 KiB | Test page styles |
 
 Chunk hashes change between builds; re-run `npm run build:analyze` for current values.
 
