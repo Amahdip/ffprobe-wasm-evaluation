@@ -61,6 +61,27 @@ export function TechnicalDetailsContent({
 
       <BundleImpactCard mode={analyzeMode} selectedEngineId={selectedEngineId} />
 
+      {analyzeMode === 'compare' && engineResults.length > 0 && (
+        <section className="card">
+          <h2 className="card-title">Inspect Engine Details</h2>
+          <p className="status-text" style={{ marginTop: 0 }}>
+            Select which engine's detailed normalization, preflight checks, and diagnostics to view below:
+          </p>
+          <div className="engine-mode-toggle" style={{ marginBottom: 0 }}>
+            {engineResults.map((result) => (
+              <button
+                key={result.engineId}
+                type="button"
+                className={`tab-btn ${selectedEngineId === result.engineId ? 'active' : ''}`}
+                onClick={() => onEngineChange(result.engineId)}
+              >
+                {result.engineName}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {validation ? (
         <>
           <section className="card">
