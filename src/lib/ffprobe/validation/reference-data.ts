@@ -83,12 +83,12 @@ export const VALIDATION_CHECK_GROUPS: ValidationCheckGroupReference[] = [
     description: 'Format detection, extension/MIME match, encryption, probe quality.',
     checks: [
       { code: 'analyze_failed', severity: 'error', condition: 'Browser ffprobe could not read the file.', userImpact: 'soft_fail — do not block upload for this alone.' },
-      { code: 'file_corrupted_or_unreadable', severity: 'warning', condition: 'Emitted alongside analyze_failed.', userImpact: 'Informational corruption hint.' },
+      { code: 'file_corrupted_or_unreadable', severity: 'error', condition: 'File appears corrupted or unreadable by client-side ffprobe-wasm.', userImpact: 'Indicates analysis failure.' },
       { code: 'unsupported_container', severity: 'warning', condition: 'Container outside allowed list.', userImpact: 'Review format before upload.' },
       { code: 'extension_container_mismatch', severity: 'warning', condition: 'File extension does not match detected container.', userImpact: 'Possible wrong extension.' },
       { code: 'wrong_extension_valid_video', severity: 'info', condition: 'Extension mismatch but valid streams found.', userImpact: 'Likely rename-only issue.' },
       { code: 'mime_container_mismatch', severity: 'warning', condition: 'Browser MIME type differs from container.', userImpact: 'Browser vs file mismatch.' },
-      { code: 'media_encrypted_or_protected', severity: 'warning', condition: 'Encryption/protection metadata in tags.', userImpact: 'May fail downstream processing.' },
+      { code: 'media_encrypted_or_protected', severity: 'error', condition: 'Encryption/protection metadata detected.', userImpact: 'May fail downstream processing.' },
       { code: 'fragmented_mp4', severity: 'warning', condition: 'Fragmented MP4 / non-faststart hints.', userImpact: 'Moov placement not verified client-side.' },
       { code: 'low_probe_score', severity: 'warning', condition: 'Container probe_score < 50.', userImpact: 'Unusual or partial file structure.' },
     ],
@@ -98,7 +98,7 @@ export const VALIDATION_CHECK_GROUPS: ValidationCheckGroupReference[] = [
     label: 'Audio',
     description: 'Audio presence, codec, bitrate, channels, A/V duration sync.',
     checks: [
-      { code: 'no_audio_stream', severity: 'warning', condition: 'No audio stream detected.', userImpact: 'Video-only upload.' },
+      { code: 'no_audio_stream', severity: 'error', condition: 'No audio stream detected.', userImpact: 'Video-only upload.' },
       { code: 'multiple_audio_tracks', severity: 'warning', condition: 'More than one audio track.', userImpact: 'Multi-track file.' },
       { code: 'audio_codec_unsupported', severity: 'warning', condition: 'Codec outside allowed list.', userImpact: 'Transcode may be required.' },
       { code: 'audio_codec_review', severity: 'warning', condition: 'Codec flagged for extra review.', userImpact: 'Manual review suggested.' },
@@ -109,6 +109,7 @@ export const VALIDATION_CHECK_GROUPS: ValidationCheckGroupReference[] = [
       { code: 'audio_channels_mono', severity: 'warning', condition: 'Mono audio (1 channel).', userImpact: 'Policy flags mono for review.' },
       { code: 'audio_channels_surround', severity: 'warning', condition: '6+ channels (surround).', userImpact: 'Unusual for upload.' },
       { code: 'av_duration_mismatch', severity: 'warning', condition: 'Video vs audio duration delta > policy limit.', userImpact: 'Sync or edit issue.' },
+      { code: 'av_duration_mismatch_critical', severity: 'error', condition: 'Audio/Video duration mismatch exceeds critical delta threshold.', userImpact: 'Hard policy violation, upload is blocked.' },
     ],
   },
   {
@@ -116,7 +117,7 @@ export const VALIDATION_CHECK_GROUPS: ValidationCheckGroupReference[] = [
     label: 'Video stream',
     description: 'Codec, pixel format, HDR, interlacing, stream count.',
     checks: [
-      { code: 'no_video_stream', severity: 'warning', condition: 'No video stream detected.', userImpact: 'Audio-only upload.' },
+      { code: 'no_video_stream', severity: 'error', condition: 'No video stream detected.', userImpact: 'Audio-only upload.' },
       { code: 'multiple_video_streams', severity: 'warning', condition: 'More than one video stream.', userImpact: 'Multi-video file.' },
       { code: 'video_codec_unsupported', severity: 'warning', condition: 'Codec outside allowed list.', userImpact: 'Transcode may be required.' },
       { code: 'codec_av1', severity: 'warning', condition: 'AV1 detected.', userImpact: 'Compatibility varies.' },
@@ -142,7 +143,7 @@ export const VALIDATION_CHECK_GROUPS: ValidationCheckGroupReference[] = [
       { code: 'vertical_video', severity: 'info', condition: 'Height > width.', userImpact: 'Vertical orientation note.' },
       { code: 'aspect_ratio_non_standard', severity: 'warning', condition: 'Non-standard aspect ratio.', userImpact: 'Letterboxing/crop risk.' },
       { code: 'dimensions_not_divisible_by_2', severity: 'warning', condition: 'Width or height odd.', userImpact: 'Encoding compatibility risk.' },
-      { code: 'dimensions_not_divisible_by_16', severity: 'warning', condition: 'Not divisible by 16.', userImpact: 'Encoder efficiency impact.' },
+      { code: 'dimensions_not_divisible_by_16', severity: 'info', condition: 'Not divisible by 16.', userImpact: 'Encoder efficiency impact.' },
     ],
   },
   {
@@ -163,7 +164,7 @@ export const VALIDATION_CHECK_GROUPS: ValidationCheckGroupReference[] = [
     description: 'File length and container vs stream duration consistency.',
     checks: [
       { code: 'duration_missing', severity: 'warning', condition: 'Duration not available.', userImpact: 'Unknown length.' },
-      { code: 'duration_too_short', severity: 'warning', condition: 'Below minimum duration.', userImpact: 'Very short clip.' },
+      { code: 'duration_too_short', severity: 'error', condition: 'Below minimum duration.', userImpact: 'Very short clip.' },
       { code: 'duration_exceeds_max', severity: 'error', condition: 'Above configured maximum duration.', userImpact: 'block if code is in blockViolationCodes.' },
       { code: 'container_stream_duration_mismatch', severity: 'warning', condition: 'Container vs video stream duration differ.', userImpact: 'Metadata inconsistency.' },
     ],

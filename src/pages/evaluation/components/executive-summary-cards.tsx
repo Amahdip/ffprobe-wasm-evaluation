@@ -11,7 +11,7 @@ interface ExecutiveSummaryCardsProps {
 export function ExecutiveSummaryCards({ report, results }: ExecutiveSummaryCardsProps) {
   const preferredId = report?.recommendation.preferredEngineId
   const preferredName = report?.recommendation.preferredEngineName ?? 'Pending analysis'
-  const payload = preferredId ? ENGINE_BUNDLE_PROFILES[preferredId]?.lazyChunkBrotli ?? '—' : '—'
+  const payload = preferredId ? ENGINE_BUNDLE_PROFILES[preferredId]?.lazyChunkGzip ?? '—' : '—'
 
   const metadataNote =
     !report

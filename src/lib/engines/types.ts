@@ -10,7 +10,6 @@ export interface EngineTimings {
 export interface EngineCapabilities {
   lazyLoaded: boolean
   bundleImpactGzip?: string
-  bundleImpactBrotli?: string
   supportedContainers?: string[]
   knownUnsupportedContainers?: string[]
   notes?: string

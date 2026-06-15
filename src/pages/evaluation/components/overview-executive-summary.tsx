@@ -13,7 +13,7 @@ export function OverviewExecutiveSummary({ report, results }: OverviewExecutiveS
   const preferredId = report?.recommendation.preferredEngineId ?? 'minimal-metadata-ffprobe'
   const profile = ENGINE_BUNDLE_PROFILES[preferredId]
 
-  const payload = profile?.lazyChunkBrotli ?? '401 KB brotli'
+  const payload = profile?.lazyChunkGzip ?? '~510 KB gzip'
 
   // Browser Requirements
   const browserRequirements =

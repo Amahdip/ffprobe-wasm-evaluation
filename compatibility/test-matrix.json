@@ -600,7 +600,8 @@
         "hasAudio": true,
         "hasVideo": true
       },
-      "browserNotes": "Real-world 720×1280 vertical upload from ~/Downloads/DELT GROWTH.mp4. Duration ~24.6s; may show VFR suspicion."
+      "browserNotes": "Real-world 720×1280 vertical upload from ~/Downloads/DELT GROWTH.mp4. Duration ~24.6s; may show VFR suspicion.",
+      "optional": true
     }
   ]
 }

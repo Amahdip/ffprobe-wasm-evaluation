@@ -258,12 +258,12 @@ ${options.warnings && options.warnings.length > 0
 **Status**: Recommended for pre-upload warnings, not authoritative validation. Backend/Akuma remains the source of truth.
 
 ### Key Rationale
-Provides all required uploader preflight metadata while reducing payload size (~430 KB brotli) and removing SharedArrayBuffer / COOP-COEP requirements.
+Provides all required uploader preflight metadata while reducing payload size (~510 KB gzip) and removing SharedArrayBuffer / COOP-COEP requirements.
 
 ---
 
 ## Executive Summary Metrics
-- **Payload Size**: ~430 KB brotli (~530 KB gzip)
+- **Payload Size**: ~510 KB gzip
 - **Metadata Coverage**: Core Metadata: Complete / Nice-to-have Metadata: Partial
 - **Browser Requirements**: No SharedArrayBuffer or cross-origin isolation (COOP/COEP) required
 - **Production Risk**: ${options.productionRisk?.toUpperCase() || 'LOW'} (${options.productionRiskExplanation || 'Core metadata aligned - suitable as warning layer.'})
@@ -273,7 +273,7 @@ Provides all required uploader preflight metadata while reducing payload size (~
 ## Decision Comparison Matrix
 | Criteria | Standard ffprobe-wasm | Minimal Metadata Engine |
 | --- | --- | --- |
-| **Payload Size** | 2.03 MB brotli | 430 KB brotli |
+| **Payload Size** | ~2.9 MB gzip | ~510 KB gzip |
 | **Metadata Coverage** | Core Metadata: Complete<br>Nice-to-have Metadata: Complete | Core Metadata: Complete<br>Nice-to-have Metadata: Partial |
 | **Browser Requirements** | SharedArrayBuffer / COOP-COEP | Standard Browser (No SAB) |
 | **Core Reliability** | High | High (matches core fields) |
