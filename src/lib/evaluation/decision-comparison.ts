@@ -51,7 +51,7 @@ export function buildDecisionComparisonRows(
 
   const bundleImpactValues = Object.fromEntries(
     engineIds.map((id) => {
-      if (id === 'minimal-metadata-ffprobe') return [id, '~400 KB']
+      if (id === 'minimal-metadata-ffprobe') return [id, '~430 KB']
       return [id, '~2 MB (COOP/COEP req)']
     })
   )
