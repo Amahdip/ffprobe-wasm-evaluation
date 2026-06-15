@@ -3,7 +3,6 @@ import type { FileInfo } from 'ffprobe-wasm'
 import {
   DEFAULT_UPLOADER_POLICY,
   type UploaderPolicy,
-  type ValidationResult,
 } from '../../lib/ffprobe'
 import {
   buildEngineComparisonReport,
@@ -74,8 +73,6 @@ export function EvaluationApp() {
   const [matrixEngineIds, setMatrixEngineIds] = useState<string[]>(() => getAllEngines().map((e) => e.id))
   const [policy, setPolicy] = useState<UploaderPolicy>(DEFAULT_UPLOADER_POLICY)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [rawOutput, setRawOutput] = useState<FileInfo | null>(null)
-  const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [engineResults, setEngineResults] = useState<AnalysisResult[]>([])
   const [comparisonReport, setComparisonReport] = useState<EngineComparisonReport | null>(null)
   const [status, setStatus] = useState('Select a video file to analyze.')
@@ -92,7 +89,17 @@ export function EvaluationApp() {
   const [matrixError, setMatrixError] = useState<string | null>(null)
   const [benchSummary, setBenchSummary] = useState<BenchSummary>(BENCH_SUMMARY_FALLBACK)
   const [viewMode, setViewMode] = useState<ViewMode>('overview')
-  const [primaryEngineId, setPrimaryEngineId] = useState<string | null>(null)
+
+  const activeResult = useMemo(() => {
+    if (engineResults.length === 0) return null
+    const selected = engineResults.find((r) => r.engineId === selectedEngineId)
+    if (selected) return selected
+    return engineResults.find((r) => r.engineId === 'ffprobe-wasm') ?? engineResults.find((r) => r.success) ?? engineResults[0]
+  }, [engineResults, selectedEngineId])
+
+  const validation = activeResult?.validation ?? null
+  const rawOutput = (activeResult?.rawOutput as FileInfo) ?? null
+  const primaryEngineId = activeResult?.engineId ?? null
 
   useEffect(() => {
     loadBenchSummary().then(setBenchSummary)
@@ -182,24 +189,12 @@ export function EvaluationApp() {
 
       setEngineResults(results)
       setComparisonReport(report)
-
-      const primary =
-        analyzeMode === 'single'
-          ? results[0]
-          : results.find((r) => r.engineId === 'ffprobe-wasm') ?? results.find((r) => r.success) ?? results[0]
-
-      setRawOutput((primary?.rawOutput as FileInfo) ?? null)
-      setValidation(primary?.validation ?? null)
-      setPrimaryEngineId(primary?.engineId ?? null)
       setStatus(`Analysis complete — ${results.filter((r) => r.success).length}/${results.length} engine(s) succeeded`)
     } catch (analyzeError) {
       const message = analyzeError instanceof Error ? analyzeError.message : 'Unknown error'
       setError(message)
       setEngineResults([])
       setComparisonReport(null)
-      setRawOutput(null)
-      setValidation(null)
-      setPrimaryEngineId(null)
       setStatus('Analysis failed.')
     } finally {
       setIsAnalyzing(false)
