@@ -275,7 +275,7 @@ export function buildEngineRecommendation(
           'Prefer minimal-metadata for upload preflight when core metadata parity holds: smaller payload, no COOP/COEP.',
         reasons: [
           `Reliability on this file: minimal ${minimal.scorePercent}% vs npm ${npm.scorePercent}%`,
-          'Bundle: ~401 KB brotli vs ~2.9 MiB npm lazy chunk',
+          'Bundle: ~1.1 MiB brotli vs ~2.9 MiB npm lazy chunk',
           'Runtime: no SharedArrayBuffer / pthreads required',
           'Caveat: pixelFormat, videoProfile, videoLevel may be absent without decoders',
         ],

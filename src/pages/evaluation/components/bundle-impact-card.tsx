@@ -10,17 +10,17 @@ export function BundleImpactCard({}: BundleImpactCardProps = {}) {
     {
       metric: 'Raw payload',
       ffprobe: { value: '~8.5 MB', type: 'warn' }, // Amber
-      minimal: { value: '~920 KB', type: 'success' }, // Green
+      minimal: { value: '~4.4 MB', type: 'success' }, // Green
     },
     {
       metric: 'Gzip payload',
       ffprobe: { value: '~2.9 MiB', type: 'warn' },
-      minimal: { value: '~480 KB', type: 'success' },
+      minimal: { value: '~1.5 MiB', type: 'success' },
     },
     {
       metric: 'Brotli payload',
       ffprobe: { value: '~2.03 MiB', type: 'warn' },
-      minimal: { value: '~401 KB', type: 'success' },
+      minimal: { value: '~1.1 MiB', type: 'success' },
     },
     {
       metric: 'Wasm delivery',

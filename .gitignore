@@ -20,6 +20,10 @@ public/fixtures/special/h264-aac-4k-30fps.mp4
 
 deploy/tls/
 
+# WASM build toolchain and artifacts
+wasm-build/emsdk/
+wasm-build/build/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

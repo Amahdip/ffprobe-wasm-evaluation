@@ -93,7 +93,7 @@ export function OverviewMode({
           </span>
         </div>
         <p className="hero-card__reason" style={{ fontSize: 16, lineHeight: 1.5, margin: '8px 0 16px' }}>
-          Provides all required uploader preflight metadata while reducing payload size (~401 KB brotli) and removing SharedArrayBuffer/COOP-COEP requirements.
+          Provides all required uploader preflight metadata while reducing payload size (~1.1 MiB brotli) and removing SharedArrayBuffer/COOP-COEP requirements.
         </p>
         <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span style={{ fontSize: 13, color: 'var(--warning)', fontWeight: 500 }}>

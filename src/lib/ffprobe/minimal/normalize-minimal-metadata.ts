@@ -35,6 +35,7 @@ export function normalizeMinimalProbe(
 
   const colorPrimaries = unknownToNull(video?.color_primaries)
   const colorTransfer = unknownToNull(video?.color_transfer)
+  const colorSpace = unknownToNull(video?.color_space)
 
   return {
     containerFormat: probe.format_name ?? null,
@@ -76,6 +77,7 @@ export function normalizeMinimalProbe(
     colorRange: unknownToNull(video?.color_range),
     colorPrimaries,
     colorTransfer,
+    colorSpace,
     isHdr: Boolean(video?.is_hdr),
     is10Bit: Boolean(video?.pix_fmt?.includes('10')),
     isInterlaced: false,

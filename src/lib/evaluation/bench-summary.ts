@@ -39,7 +39,7 @@ export const BENCH_SUMMARY_FALLBACK: BenchSummary = {
   generatedAt: '2026-06-14',
   sizes: {
     full: { total: { raw: 2329900, gzip: 801792, brotli: 618803 } },
-    minimal: { total: { raw: 942899, gzip: 491418, brotli: 410931 } },
+    minimal: { total: { raw: 4537571, gzip: 1521359, brotli: 1134514 } },
   },
   runtime: {
     full: { usesPthread: true, usesSAB: true },
@@ -50,7 +50,7 @@ export const BENCH_SUMMARY_FALLBACK: BenchSummary = {
   regressedFields: ['pixelFormat', 'videoProfile', 'videoLevel'],
   successCriteria: {
     muchSmallerRaw: true,
-    under700KbBrotli: true,
+    under700KbBrotli: false,
     noCoreRegressions: true,
     noSabRequired: true,
   },

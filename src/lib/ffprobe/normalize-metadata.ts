@@ -24,6 +24,7 @@ import type {
 type ExtendedStream = FileInfo['streams'][number] & {
   field_order?: string
   color_transfer?: string
+  color_space?: string
   sample_aspect_ratio?: string
   display_aspect_ratio?: string
 }
@@ -221,6 +222,7 @@ export function normalizeMetadata(
     primaryVideo?.color_transfer ??
     primaryVideo?.tags?.color_transfer ??
     null
+  const colorSpace = primaryVideo?.color_space ?? null
   const pixelFormat = primaryVideo?.pix_fmt ?? null
   const fieldOrder =
     primaryVideo?.field_order ??
@@ -328,6 +330,7 @@ export function normalizeMetadata(
     colorRange: primaryVideo?.color_range ?? null,
     colorPrimaries,
     colorTransfer,
+    colorSpace,
     isHdr: isHdrVideo(colorPrimaries, colorTransfer),
     is10Bit: is10BitPixelFormat(pixelFormat),
     isInterlaced: isInterlacedFieldOrder(fieldOrder),
