@@ -560,9 +560,31 @@
       "browserNotes": "Should trigger multiple_audio_streams warning."
     },
     {
+      "id": "TC-SP-014",
+      "category": "special",
+      "name": "Synthetic vertical video (2s)",
+      "container": "mp4",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "specialCase": "vertical-video",
+      "fixtureFile": "special/vertical-2s.mp4",
+      "expected": {
+        "analyzeSuccess": true,
+        "containerContains": "mp4",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "width": 720,
+        "height": 1280,
+        "durationSeconds": 2,
+        "hasAudio": true,
+        "hasVideo": true
+      },
+      "browserNotes": "Short 2-second synthetic vertical video (720x1280) to test fast vertical dimension logic."
+    },
+    {
       "id": "TC-RW-001",
       "category": "real-world",
-      "name": "DELT GROWTH vertical video",
+      "name": "vertical video",
       "container": "mp4",
       "videoCodec": "h264",
       "audioCodec": "aac",
@@ -578,8 +600,7 @@
         "hasAudio": true,
         "hasVideo": true
       },
-      "browserNotes": "Real-world 720×1280 vertical upload from ~/Downloads/DELT GROWTH.mp4. Duration ~24.6s; may show VFR suspicion.",
-      "optional": true
+      "browserNotes": "Real-world 720×1280 vertical upload from ~/Downloads/DELT GROWTH.mp4. Duration ~24.6s; may show VFR suspicion."
     }
   ]
 }

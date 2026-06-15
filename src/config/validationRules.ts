@@ -38,7 +38,7 @@ export const validationRules: ValidationRule[] = [
   {
     id: 'file_corrupted_or_unreadable',
     group: 'container',
-    severity: 'warning',
+    severity: 'error',
     condition: (ctx) => ctx.analyzeError ? 'File appears corrupted or unreadable by client-side ffprobe-wasm.' : null
   },
   {
@@ -84,7 +84,7 @@ export const validationRules: ValidationRule[] = [
   {
     id: 'media_encrypted_or_protected',
     group: 'container',
-    severity: 'warning',
+    severity: 'error',
     condition: (ctx) => {
       if (ctx.analyzeError) return null
       const formatTags = ctx.fileInfo.format?.tags ?? {}
@@ -120,7 +120,7 @@ export const validationRules: ValidationRule[] = [
   {
     id: 'no_audio_stream',
     group: 'audio',
-    severity: 'warning',
+    severity: 'error',
     condition: (ctx) => !ctx.metadata.hasAudio ? 'No audio stream detected.' : null
   },
   {
@@ -222,7 +222,7 @@ export const validationRules: ValidationRule[] = [
   {
     id: 'no_video_stream',
     group: 'video',
-    severity: 'warning',
+    severity: 'error',
     condition: (ctx) => !ctx.metadata.hasVideo ? 'No video stream detected.' : null
   },
   {
@@ -476,7 +476,7 @@ export const validationRules: ValidationRule[] = [
   {
     id: 'duration_too_short',
     group: 'duration',
-    severity: 'warning',
+    severity: 'error',
     condition: (ctx) => {
       if (ctx.metadata.durationSeconds === null) return null
       return ctx.metadata.durationSeconds < ctx.policy.minDurationSeconds

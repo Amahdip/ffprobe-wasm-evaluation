@@ -31,6 +31,8 @@ export interface NormalizedMetadata {
   height: number | null
   isVertical: boolean
   aspectRatio: number | null
+  sampleAspectRatio: string | null
+  displayAspectRatio: string | null
   standardAspectRatio: boolean
   fps: number | null
   avgFps: number | null

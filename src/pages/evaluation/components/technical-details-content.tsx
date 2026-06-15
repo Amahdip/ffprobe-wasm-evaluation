@@ -2,6 +2,7 @@ import type { FileInfo } from 'ffprobe-wasm'
 import type { EngineComparisonReport } from '../../../lib/comparison'
 import type { AnalysisResult } from '../../../lib/engines/types'
 import type { ValidationResult } from '../../../lib/ffprobe'
+import { formatAspectRatio } from '../../../lib/ffprobe/validation/helpers'
 import { BundleImpactCard } from './bundle-impact-card'
 import { EngineSelector, type AnalyzeMode } from './engine-selector'
 import type { ViewMode } from './view-mode-toggle'
@@ -73,6 +74,8 @@ export function TechnicalDetailsContent({
               <MetaItem label="Video codec" value={validation.metadata.videoCodec} />
               <MetaItem label="Audio codec" value={validation.metadata.audioCodec} />
               <DimensionMetaItem validation={validation} />
+              <MetaItem label="SAR (Pixel Aspect Ratio)" value={formatAspectRatio(validation.metadata.sampleAspectRatio)} />
+              <MetaItem label="DAR (Display Aspect Ratio)" value={formatAspectRatio(validation.metadata.displayAspectRatio)} />
               <MetaItem label="FPS" value={validation.metadata.fps?.toFixed(3) ?? '—'} />
               <MetaItem label="Bitrate" value={validation.metadata.bitrateBps != null ? `${Math.round(validation.metadata.bitrateBps / 1000)} kbps` : '—'} />
               <MetaItem label="File size" value={validation.metadata.fileSizeBytes != null ? `${(validation.metadata.fileSizeBytes / 1_000_000).toFixed(2)} MB` : '—'} />

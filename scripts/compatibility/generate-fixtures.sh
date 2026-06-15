@@ -165,6 +165,8 @@ make_av_mismatch
 make_audio_only
 cp "${OUT_DIR}/audio-codec/h264-no-audio-30fps.mp4" "${OUT_DIR}/special/video-only-h264.mp4"
 make_multiple_audio
+make_base_video "${OUT_DIR}/special/vertical-2s.mp4" 30 720 1280 2 h264 aac mp4
+
 
 if [[ "${GENERATE_OPTIONAL}" == "1" ]]; then
   make_optional_heavy

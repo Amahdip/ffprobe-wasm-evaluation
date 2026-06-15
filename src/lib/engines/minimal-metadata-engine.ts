@@ -77,6 +77,8 @@ export const minimalMetadataEngine: MediaAnalysisEngine = {
           color_primaries: s.color_primaries,
           color_transfer: s.color_transfer,
           color_range: s.color_range,
+          sample_aspect_ratio: s.sample_aspect_ratio,
+          display_aspect_ratio: s.display_aspect_ratio,
         })),
       }
 

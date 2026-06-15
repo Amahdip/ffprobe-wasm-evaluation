@@ -15,6 +15,8 @@ export interface MinimalStream {
   height?: number
   codec_width?: number
   codec_height?: number
+  sample_aspect_ratio?: string | null
+  display_aspect_ratio?: string | null
   pix_fmt?: string | null
   avg_frame_rate?: string
   r_frame_rate?: string

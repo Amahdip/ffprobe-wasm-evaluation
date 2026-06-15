@@ -13,6 +13,7 @@
     "format/mov-h264-aac-30fps.mov",
     "format/mp4-h264-aac-30fps.mp4",
     "format/webm-vp9-opus-30fps.webm",
+    "real-world/delt-growth-vertical.mp4",
     "special/audio-only-aac.m4a",
     "special/av-duration-mismatch.mp4",
     "special/corrupted-truncated.mp4",
@@ -22,6 +23,7 @@
     "special/h264-aac-60fps.mp4",
     "special/h264-aac-wrong-ext.mp3",
     "special/multiple-audio-tracks.mp4",
+    "special/vertical-2s.mp4",
     "special/vfr-h264-aac.mp4",
     "special/video-only-h264.mp4",
     "video-codec/av1-aac-30fps.mp4",
@@ -31,9 +33,8 @@
     "video-codec/vp9-opus-30fps.webm"
   ],
   "optional": [
-    "real-world/delt-growth-vertical.mp4",
     "special/h264-aac-4k-30fps.mp4",
     "special/h264-aac-long-30fps.mp4"
   ],
-  "generatedAt": "2026-06-14T11:01:20.351Z"
+  "generatedAt": "2026-06-15T06:18:52.960Z"
 }

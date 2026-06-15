@@ -1,5 +1,6 @@
 import type { NormalizedMetadata } from '../ffprobe/types'
 import type { ComparisonFieldDefinition } from './types'
+import { formatAspectRatio } from '../ffprobe/validation/helpers'
 
 function formatNumber(value: number | null | undefined, digits = 3): string {
   if (value === null || value === undefined) return '—'
@@ -36,6 +37,16 @@ export const COMPARISON_FIELDS: ComparisonFieldDefinition[] = [
   },
   { key: 'width', label: 'Width', format: (v) => formatNumber(v as number | null, 0) },
   { key: 'height', label: 'Height', format: (v) => formatNumber(v as number | null, 0) },
+  {
+    key: 'sampleAspectRatio',
+    label: 'SAR (Pixel Aspect Ratio)',
+    format: (v) => formatAspectRatio(v as string | null) ?? '—',
+  },
+  {
+    key: 'displayAspectRatio',
+    label: 'DAR (Display Aspect Ratio)',
+    format: (v) => formatAspectRatio(v as string | null) ?? '—',
+  },
   {
     key: 'codecWidth',
     label: 'Codec width',

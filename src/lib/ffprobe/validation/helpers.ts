@@ -107,3 +107,12 @@ export function parseStreamNumber(value: string | number | undefined): number | 
   const parsed = typeof value === 'number' ? value : Number.parseFloat(value)
   return Number.isFinite(parsed) ? parsed : null
 }
+
+export function formatAspectRatio(value: string | null | undefined): string | null {
+  if (!value || value === '—') return null
+  const cleaned = String(value).trim()
+  if (cleaned === '0/1' || cleaned === '0:1' || cleaned === '0/0' || cleaned === 'N/A') {
+    return '1:1 (Square)'
+  }
+  return cleaned.replace('/', ':')
+}

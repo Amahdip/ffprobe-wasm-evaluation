@@ -118,6 +118,12 @@ export function buildMetadataSources(
     rotation: rotationSource,
     pixelFormat: pixelFormatSource,
     colorPrimaries: colorPrimariesSource,
+    sampleAspectRatio: (primaryVideo as any)?.sample_aspect_ratio
+      ? streamRef(videoIndex, 'sample_aspect_ratio')
+      : 'unavailable',
+    displayAspectRatio: (primaryVideo as any)?.display_aspect_ratio
+      ? streamRef(videoIndex, 'display_aspect_ratio')
+      : 'unavailable',
     colorRange: primaryVideo?.color_range
       ? streamRef(videoIndex, 'color_range')
       : 'unavailable (not verified in ffprobe-wasm)',

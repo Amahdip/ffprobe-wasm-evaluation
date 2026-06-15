@@ -567,6 +567,11 @@ export function TechnicalMode({
                               <span
                                 className={decisionBadgeClass(result.decision as any)}
                                 style={{ fontSize: '11px', padding: '2px 6px', lineHeight: 1.2, fontWeight: 700 }}
+                                title={[
+                                  result.errors ? `Errors: ${result.errors}` : '',
+                                  result.warnings ? `Warnings: ${result.warnings}` : '',
+                                  result.notes ? `Notes: ${result.notes}` : ''
+                                ].filter(Boolean).join('\n')}
                               >
                                 {result.decision === 'pass'
                                   ? 'PASS'

@@ -29,6 +29,14 @@ export const preflightPolicy: UploaderPolicy = {
   standardPixelFormats: ['yuv420p', 'yuvj420p'],
   standardAspectRatioTolerance: 0.04,
   warnUploadSizeCategories: ['large', 'very_large'],
-  blockViolationCodes: ['file_too_large', 'duration_exceeds_max'],
+  blockViolationCodes: [
+    'file_too_large',
+    'duration_exceeds_max',
+    'no_audio_stream',
+    'duration_too_short',
+    'file_corrupted_or_unreadable',
+    'no_video_stream',
+    'media_encrypted_or_protected',
+  ],
   enableResolutionValidation: false,
 }

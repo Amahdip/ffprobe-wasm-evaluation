@@ -50,6 +50,8 @@ export function normalizeMinimalProbe(
     height,
     isVertical: Boolean(width && height && height > width),
     aspectRatio: width && height ? width / height : null,
+    sampleAspectRatio: video?.sample_aspect_ratio ?? null,
+    displayAspectRatio: video?.display_aspect_ratio ?? null,
     standardAspectRatio: false,
     fps: video?.fps ?? null,
     avgFps: video?.fps ?? null,

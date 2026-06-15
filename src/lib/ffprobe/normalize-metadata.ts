@@ -24,6 +24,8 @@ import type {
 type ExtendedStream = FileInfo['streams'][number] & {
   field_order?: string
   color_transfer?: string
+  sample_aspect_ratio?: string
+  display_aspect_ratio?: string
 }
 
 function parseRational(value: string | undefined): number | null {
@@ -226,6 +228,8 @@ export function normalizeMetadata(
     null
 
   const aspectRatio = width && height ? width / height : null
+  const sampleAspectRatio = primaryVideo?.sample_aspect_ratio ?? null
+  const displayAspectRatio = primaryVideo?.display_aspect_ratio ?? null
 
   const fileName = context.fileName ?? fileInfo.format?.filename ?? null
   const fileExtension = getFileExtension(fileName)
@@ -298,6 +302,8 @@ export function normalizeMetadata(
     height,
     isVertical: Boolean(width && height && height > width),
     aspectRatio,
+    sampleAspectRatio,
+    displayAspectRatio,
     standardAspectRatio: width && height ? isStandardAspectRatio(width, height) : false,
     fps,
     avgFps,

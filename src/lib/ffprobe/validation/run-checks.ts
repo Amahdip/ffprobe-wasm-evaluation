@@ -51,7 +51,7 @@ export function runAllPreflightChecks(
   })
 
   const errors = issues.filter((issue) => issue.severity === 'error')
-  const warnings = issues.filter((issue) => issue.severity === 'warning' || issue.severity === 'info')
+  const warnings = issues.filter((issue) => issue.severity === 'warning')
 
   // Dedupe by code — first occurrence wins
   const dedupe = (items: ValidationIssue[]) => {
