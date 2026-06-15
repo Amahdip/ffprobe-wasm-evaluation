@@ -73,6 +73,7 @@ Run `npm run build:analyze` after production build. Expected:
 
 - Main bundle: ~80 KiB gzip (engines not in main chunk)
 - ffprobe-wasm lazy chunk: ~2.9 MiB gzip
+- minimal-metadata-ffprobe lazy chunk: ~510 KB gzip
 - Core fixtures: ~5–15 MiB (depends on codecs generated)
 
 ## Architecture
