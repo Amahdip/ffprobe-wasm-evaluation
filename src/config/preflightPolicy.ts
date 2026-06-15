@@ -12,6 +12,7 @@ export const preflightPolicy: UploaderPolicy = {
   warnVideoCodecs: ['av1', 'hevc', 'vp8', 'vp9'],
   warnAudioCodecs: [],
   maxAudioVideoDurationDeltaSeconds: 1,
+  blockAudioVideoDurationDeltaSeconds: 10,
   maxContainerStreamDurationDeltaSeconds: 2,
   maxFileSizeBytes: 2 * 1024 * 1024 * 1024,
   minWidth: 144,
@@ -37,6 +38,7 @@ export const preflightPolicy: UploaderPolicy = {
     'file_corrupted_or_unreadable',
     'no_video_stream',
     'media_encrypted_or_protected',
+    'av_duration_mismatch_critical',
   ],
   enableResolutionValidation: false,
 }

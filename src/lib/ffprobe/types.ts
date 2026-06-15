@@ -105,6 +105,7 @@ export interface UploaderPolicy {
   warnVideoCodecs: string[]
   warnAudioCodecs: string[]
   maxAudioVideoDurationDeltaSeconds: number
+  blockAudioVideoDurationDeltaSeconds?: number
   maxContainerStreamDurationDeltaSeconds: number
   maxFileSizeBytes: number
   minWidth: number

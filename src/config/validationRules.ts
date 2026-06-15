@@ -212,9 +212,25 @@ export const validationRules: ValidationRule[] = [
     severity: 'warning',
     condition: (ctx) => {
       if (!ctx.metadata.hasVideo || !ctx.metadata.hasAudio) return null
-      return (ctx.metadata.videoStreamDurationSeconds !== null && ctx.metadata.audioStreamDurationSeconds !== null &&
-        Math.abs(ctx.metadata.videoStreamDurationSeconds - ctx.metadata.audioStreamDurationSeconds) > ctx.policy.maxAudioVideoDurationDeltaSeconds)
-        ? `Primary video duration (${ctx.metadata.videoStreamDurationSeconds.toFixed(3)}s) differs from primary audio duration (${ctx.metadata.audioStreamDurationSeconds.toFixed(3)}s) by more than ${ctx.policy.maxAudioVideoDurationDeltaSeconds}s.` : null
+      if (ctx.metadata.videoStreamDurationSeconds === null || ctx.metadata.audioStreamDurationSeconds === null) return null
+      const delta = Math.abs(ctx.metadata.videoStreamDurationSeconds - ctx.metadata.audioStreamDurationSeconds)
+      const maxDelta = ctx.policy.maxAudioVideoDurationDeltaSeconds
+      const blockDelta = ctx.policy.blockAudioVideoDurationDeltaSeconds ?? 10
+      return (delta > maxDelta && delta <= blockDelta)
+        ? `Primary video duration (${ctx.metadata.videoStreamDurationSeconds.toFixed(3)}s) differs from primary audio duration (${ctx.metadata.audioStreamDurationSeconds.toFixed(3)}s) by more than ${maxDelta}s.` : null
+    }
+  },
+  {
+    id: 'av_duration_mismatch_critical',
+    group: 'audio',
+    severity: 'error',
+    condition: (ctx) => {
+      if (!ctx.metadata.hasVideo || !ctx.metadata.hasAudio) return null
+      if (ctx.metadata.videoStreamDurationSeconds === null || ctx.metadata.audioStreamDurationSeconds === null) return null
+      const delta = Math.abs(ctx.metadata.videoStreamDurationSeconds - ctx.metadata.audioStreamDurationSeconds)
+      const blockDelta = ctx.policy.blockAudioVideoDurationDeltaSeconds ?? 10
+      return (delta > blockDelta)
+        ? `Audio/Video duration mismatch is critical: Primary video duration (${ctx.metadata.videoStreamDurationSeconds.toFixed(3)}s) differs from primary audio duration (${ctx.metadata.audioStreamDurationSeconds.toFixed(3)}s) by more than ${blockDelta}s. Upload is blocked.` : null
     }
   },
 
