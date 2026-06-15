@@ -2,7 +2,6 @@ export interface EngineBundleProfile {
 	id: string;
 	name: string;
 	lazyChunkGzip: string;
-	lazyChunkBrotli: string;
 	lazyLoaded: boolean;
 	wasmDelivery: string;
 	firstLoadRisk: string;
@@ -28,27 +27,25 @@ export const ENGINE_BUNDLE_PROFILES: Record<string, EngineBundleProfile> = {
 		id: 'ffprobe-wasm',
 		name: 'ffprobe-wasm',
 		lazyChunkGzip: '~2.9 MiB gzip',
-		lazyChunkBrotli: '~2.03 MiB brotli',
 		lazyLoaded: true,
 		wasmDelivery: 'Embedded in lazy JS chunk (npm package)',
 		firstLoadRisk: '~8.5 MB raw on first analyze',
 		coopCoepRequired: true,
 		technicalLines: [
-			'npm ffprobe-wasm lazy chunk: ~8.5 MB raw / ~2.9 MiB gzip / ~2.0 MiB brotli',
+			'npm ffprobe-wasm lazy chunk: ~8.5 MB raw / ~2.9 MiB gzip',
 			'Requires COOP/COEP + SharedArrayBuffer (pthreads)',
 		],
 	},
 	'minimal-metadata-ffprobe': {
 		id: 'minimal-metadata-ffprobe',
 		name: 'minimal-metadata-ffprobe',
-		lazyChunkGzip: '~530 KB gzip',
-		lazyChunkBrotli: '~430 KB brotli',
+		lazyChunkGzip: '~510 KB gzip',
 		lazyLoaded: true,
 		wasmDelivery: 'Standalone .wasm + lazy loader script',
 		firstLoadRisk: '~1.1 MB raw on first analyze',
 		coopCoepRequired: false,
 		technicalLines: [
-			'minimal-metadata: ~1.1 MB raw / ~530 KB gzip / ~430 KB brotli',
+			'minimal-metadata: ~1.1 MB raw / ~510 KB gzip',
 			'Single-threaded; served from /engines/minimal-metadata/',
 			'No SharedArrayBuffer or cross-origin isolation required',
 		],
@@ -61,7 +58,6 @@ function profileForEngine(engineId: string): EngineBundleProfile {
 			id: engineId,
 			name: engineId,
 			lazyChunkGzip: 'Unknown',
-			lazyChunkBrotli: 'Unknown',
 			lazyLoaded: true,
 			wasmDelivery: 'Unknown',
 			firstLoadRisk: 'Unknown',
@@ -121,7 +117,6 @@ export const BUNDLE_IMPACT = {
 	mainBundleImpact: MAIN_BUNDLE_IMPACT,
 	mainBundleDetail: MAIN_BUNDLE_DETAIL,
 	lazyChunkGzip: ENGINE_BUNDLE_PROFILES['ffprobe-wasm'].lazyChunkGzip,
-	lazyChunkBrotli: ENGINE_BUNDLE_PROFILES['ffprobe-wasm'].lazyChunkBrotli,
 	lazyLoaded: true,
 	standaloneWasm: ENGINE_BUNDLE_PROFILES['ffprobe-wasm'].wasmDelivery,
 	userImpact: 'Each engine loads on first use only',

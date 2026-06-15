@@ -31,15 +31,15 @@ export function BenchSummaryCard() {
       </p>
       <div className="executive-summary">
         <div className="summary-row">
-          <span className="summary-row__label">Full baseline (raw / brotli)</span>
+          <span className="summary-row__label">Full baseline (raw / gzip)</span>
           <span className="summary-row__value">
-            {full ? `${fmtMB(full.raw)} / ${fmtKB(full.brotli)}` : '—'}
+            {full ? `${fmtMB(full.raw)} / ${fmtKB(full.gzip)}` : '—'}
           </span>
         </div>
         <div className="summary-row">
-          <span className="summary-row__label">Minimal-metadata (raw / brotli)</span>
+          <span className="summary-row__label">Minimal-metadata (raw / gzip)</span>
           <span className="summary-row__value">
-            {minimal ? `${fmtMB(minimal.raw)} / ${fmtKB(minimal.brotli)}` : '—'}
+            {minimal ? `${fmtMB(minimal.raw)} / ${fmtKB(minimal.gzip)}` : '—'}
           </span>
         </div>
         <div className="summary-row">
@@ -62,7 +62,7 @@ export function BenchSummaryCard() {
       <h3 style={{ marginTop: 16 }}>Success criteria</h3>
       <ul className="recommendation-list">
         <li>Significantly smaller raw download: {summary.successCriteria.muchSmallerRaw ? 'PASS' : 'FAIL'}</li>
-        <li>Under 700 KB brotli: {summary.successCriteria.under700KbBrotli ? 'PASS' : 'FAIL'}</li>
+        <li>Under 700 KB gzip: {summary.successCriteria.under700KbGzip ? 'PASS' : 'FAIL'}</li>
         <li>No core preflight regressions: {summary.successCriteria.noCoreRegressions ? 'PASS' : 'FAIL'}</li>
         <li>No SharedArrayBuffer required: {summary.successCriteria.noSabRequired ? 'PASS' : 'FAIL'}</li>
       </ul>

@@ -3,7 +3,6 @@ export interface EngineSizeRow {
   label: string
   raw: string
   gzip: string
-  brotli: string
   pthreads: boolean
   sabRequired: boolean
   coopCoepRequired: boolean
@@ -50,7 +49,7 @@ export const BENCH_SUMMARY_FALLBACK: BenchSummary = {
   regressedFields: ['pixelFormat', 'videoProfile', 'videoLevel'],
   successCriteria: {
     muchSmallerRaw: true,
-    under700KbBrotli: true,
+    under700KbGzip: true,
     noCoreRegressions: true,
     noSabRequired: true,
   },
@@ -62,7 +61,6 @@ export const ENGINE_SIZE_ROWS: EngineSizeRow[] = [
     label: 'npm ffprobe-wasm (lazy chunk in app)',
     raw: '~8.5 MB',
     gzip: '~2.9 MiB',
-    brotli: '~2.0 MiB',
     pthreads: true,
     sabRequired: true,
     coopCoepRequired: true,
@@ -73,7 +71,6 @@ export const ENGINE_SIZE_ROWS: EngineSizeRow[] = [
     label: 'Rebuilt full baseline (source repo)',
     raw: fmtMB(BENCH_SUMMARY_FALLBACK.sizes.full!.total.raw),
     gzip: fmtKB(BENCH_SUMMARY_FALLBACK.sizes.full!.total.gzip),
-    brotli: fmtKB(BENCH_SUMMARY_FALLBACK.sizes.full!.total.brotli),
     pthreads: true,
     sabRequired: true,
     coopCoepRequired: true,
@@ -84,7 +81,6 @@ export const ENGINE_SIZE_ROWS: EngineSizeRow[] = [
     label: 'Optimized minimal-metadata',
     raw: fmtMB(BENCH_SUMMARY_FALLBACK.sizes.minimal!.total.raw),
     gzip: fmtKB(BENCH_SUMMARY_FALLBACK.sizes.minimal!.total.gzip),
-    brotli: fmtKB(BENCH_SUMMARY_FALLBACK.sizes.minimal!.total.brotli),
     pthreads: false,
     sabRequired: false,
     coopCoepRequired: false,
@@ -106,8 +102,8 @@ export function formatBenchSummaryForExport(summary: BenchSummary): string {
   const f = summary.sizes.full?.total
   const m = summary.sizes.minimal?.total
   return [
-    `Full baseline: raw ${f ? fmtMB(f.raw) : 'n/a'}, brotli ${f ? fmtKB(f.brotli) : 'n/a'}`,
-    `Minimal-metadata: raw ${m ? fmtMB(m.raw) : 'n/a'}, brotli ${m ? fmtKB(m.brotli) : 'n/a'}`,
+    `Full baseline: raw ${f ? fmtMB(f.raw) : 'n/a'}, gzip ${f ? fmtKB(f.gzip) : 'n/a'}`,
+    `Minimal-metadata: raw ${m ? fmtMB(m.raw) : 'n/a'}, gzip ${m ? fmtKB(m.gzip) : 'n/a'}`,
     `Init ms: full ${summary.initMs.full ?? 'n/a'}, minimal ${summary.initMs.minimal ?? 'n/a'}`,
     `Median analyze ms: full ${summary.medianAnalyzeMs.full ?? 'n/a'}, minimal ${summary.medianAnalyzeMs.minimal ?? 'n/a'}`,
     `Regressed fields in minimal: ${summary.regressedFields.join(', ')}`,

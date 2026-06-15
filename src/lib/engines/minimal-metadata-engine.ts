@@ -11,12 +11,11 @@ import type { MediaAnalysisEngine } from './types'
 export const minimalMetadataEngine: MediaAnalysisEngine = {
   id: 'minimal-metadata-ffprobe',
   name: 'minimal-metadata-ffprobe',
-  description: 'Optimized metadata-only ffprobe (~530 KB gzip, no pthreads / no COOP-COEP)',
+  description: 'Optimized metadata-only ffprobe (~510 KB gzip, no pthreads / no COOP-COEP)',
   available: true,
   capabilities: {
     lazyLoaded: true,
-    bundleImpactGzip: '~530 KB gzip',
-    bundleImpactBrotli: '~430 KB brotli',
+    bundleImpactGzip: '~510 KB gzip',
     supportedContainers: ['mp4', 'mov', 'webm', 'mkv', 'm4v', 'matroska', 'avi', 'flv', 'mp3'],
     knownUnsupportedContainers: [],
     notes: 'Single-threaded; standalone .wasm; no SharedArrayBuffer required',

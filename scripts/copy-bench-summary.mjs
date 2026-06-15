@@ -39,7 +39,7 @@ const summary = {
   regressedFields: ['pixelFormat', 'videoProfile', 'videoLevel'],
   successCriteria: {
     muchSmallerRaw: (r.sizes?.full?.total?.raw ?? 0) > (r.sizes?.minimal?.total?.raw ?? 0) * 2,
-    under700KbBrotli: (r.sizes?.minimal?.total?.brotli ?? 0) <= 700 * 1024,
+    under700KbGzip: (r.sizes?.minimal?.total?.gzip ?? 0) <= 700 * 1024,
     noCoreRegressions: true,
     noSabRequired: !(r.runtime?.minimal?.usesSAB),
   },

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-15T08:23:31.748Z",
+  "generatedAt": "2026-06-15T08:30:09.052Z",
   "sizes": {
     "full": {
       "dir": "/Users/amp/ffprobe-wasm/ffprobe-wasm/bench/dist/full/web",
@@ -258,7 +258,7 @@
   ],
   "successCriteria": {
     "muchSmallerRaw": true,
-    "under700KbBrotli": true,
+    "under700KbGzip": true,
     "noCoreRegressions": true,
     "noSabRequired": true
   }

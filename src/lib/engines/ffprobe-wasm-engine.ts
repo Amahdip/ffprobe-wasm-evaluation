@@ -15,7 +15,6 @@ export const ffprobeWasmEngine: MediaAnalysisEngine = {
   capabilities: {
     lazyLoaded: true,
     bundleImpactGzip: '~2.9 MiB gzip',
-    bundleImpactBrotli: '~2.03 MiB brotli',
     supportedContainers: ['mp4', 'mov', 'webm', 'mkv', 'm4v', 'matroska'],
     knownUnsupportedContainers: ['avi', 'flv'],
     notes: 'Requires COOP/COEP for SharedArrayBuffer',
