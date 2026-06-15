@@ -12,6 +12,9 @@ export default defineConfig({
   server: {
     headers: crossOriginIsolationHeaders,
   },
+  optimizeDeps: {
+    entries: ['index.html'],
+  },
   preview: {
     headers: crossOriginIsolationHeaders,
   },
