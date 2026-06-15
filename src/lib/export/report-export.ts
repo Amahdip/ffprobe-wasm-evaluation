@@ -111,8 +111,7 @@ export function exportMarkdownReport(options: {
   engineResults: AnalysisResult[]
   matrixSummaries: MatrixEngineSummary[]
 }) {
-  const latestValidation = options.engineResults.find((r) => r.success)?.validation ?? null
-  const recommendation = buildRecommendationFromValidation(latestValidation)
+  const recommendation = buildRecommendationFromValidation()
   const benchBlock = options.benchSummary
     ? formatBenchSummaryForExport(options.benchSummary)
     : 'Bench summary not loaded'

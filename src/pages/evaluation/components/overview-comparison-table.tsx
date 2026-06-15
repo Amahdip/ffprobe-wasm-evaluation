@@ -1,16 +1,14 @@
 import { getAllEngines } from '../../../lib/engines'
 import { buildDecisionComparisonRows } from '../../../lib/evaluation/decision-comparison'
 import type { EngineComparisonReport } from '../../../lib/comparison'
-import type { AnalysisResult } from '../../../lib/engines/types'
 
 interface OverviewComparisonTableProps {
   report: EngineComparisonReport | null
-  results: AnalysisResult[]
 }
 
-export function OverviewComparisonTable({ report, results }: OverviewComparisonTableProps) {
+export function OverviewComparisonTable({ report }: OverviewComparisonTableProps) {
   const engines = getAllEngines().filter((engine) => engine.available)
-  const rows = buildDecisionComparisonRows(report, results)
+  const rows = buildDecisionComparisonRows(report)
 
   return (
     <section className="card">

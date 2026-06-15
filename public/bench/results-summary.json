@@ -1,29 +1,25 @@
 {
-  "generatedAt": "2026-06-15T08:37:19.024Z",
+  "generatedAt": "2026-06-15T08:52:14.655Z",
   "sizes": {
     "full": {
       "dir": "/Users/amp/ffprobe-wasm/ffprobe-wasm/bench/dist/full/web",
       "perFile": {
         "ffprobe-wasm.js": {
           "raw": 144694,
-          "gzip": 36951,
-          "brotli": 32287
+          "gzip": 36951
         },
         "ffprobe-wasm.wasm": {
           "raw": 2182191,
-          "gzip": 763615,
-          "brotli": 585429
+          "gzip": 763615
         },
         "ffprobe-wasm.worker.js": {
           "raw": 2983,
-          "gzip": 1230,
-          "brotli": 1076
+          "gzip": 1230
         }
       },
       "total": {
         "raw": 2329868,
-        "gzip": 801796,
-        "brotli": 618792
+        "gzip": 801796
       }
     },
     "minimal": {
@@ -31,19 +27,16 @@
       "perFile": {
         "ffprobe.js": {
           "raw": 44364,
-          "gzip": 16114,
-          "brotli": 14329
+          "gzip": 16114
         },
         "ffprobe.wasm": {
           "raw": 898550,
-          "gzip": 475315,
-          "brotli": 396597
+          "gzip": 475315
         }
       },
       "total": {
         "raw": 942914,
-        "gzip": 491429,
-        "brotli": 410926
+        "gzip": 491429
       }
     },
     "minimal-plus": {
@@ -51,19 +44,16 @@
       "perFile": {
         "ffprobe.js": {
           "raw": 44395,
-          "gzip": 16138,
-          "brotli": 14351
+          "gzip": 16138
         },
         "ffprobe.wasm": {
           "raw": 2255993,
-          "gzip": 987807,
-          "brotli": 779943
+          "gzip": 987807
         }
       },
       "total": {
         "raw": 2300388,
-        "gzip": 1003945,
-        "brotli": 794294
+        "gzip": 1003945
       }
     }
   },

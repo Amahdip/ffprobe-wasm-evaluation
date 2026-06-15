@@ -14,7 +14,7 @@ import { CompareTable } from './compare-table'
 import { BenchmarkDashboard } from './benchmark-dashboard'
 import { EngineScorecards } from './engine-scorecards'
 import { TechnicalDetailsContent } from './technical-details-content'
-import { decisionBadgeClass } from '../../../lib/ffprobe'
+import { matrixDecisionBadgeClass } from '../../../lib/ffprobe'
 
 interface TechnicalModeProps {
   wasmEnvironment: {
@@ -565,7 +565,7 @@ export function TechnicalMode({
                           <td style={commonCellStyle}>
                             {result?.decision ? (
                               <span
-                                className={decisionBadgeClass(result.decision as any)}
+                                className={matrixDecisionBadgeClass(result.decision)}
                                 style={{ fontSize: '11px', padding: '2px 6px', lineHeight: 1.2, fontWeight: 700 }}
                                 title={[
                                   result.errors ? `Errors: ${result.errors}` : '',

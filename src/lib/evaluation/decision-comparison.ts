@@ -10,7 +10,6 @@ export interface DecisionComparisonRow {
 
 export function buildDecisionComparisonRows(
   report: EngineComparisonReport | null,
-  _results: AnalysisResult[],
 ): DecisionComparisonRow[] {
   const engineIds = getAllEngines().filter(e => e.available).map((e) => e.id)
 

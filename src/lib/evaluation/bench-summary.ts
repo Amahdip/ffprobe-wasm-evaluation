@@ -12,8 +12,8 @@ export interface EngineSizeRow {
 export interface BenchSummary {
   generatedAt: string
   sizes: {
-    full?: { total: { raw: number; gzip: number; brotli: number } }
-    minimal?: { total: { raw: number; gzip: number; brotli: number } }
+    full?: { total: { raw: number; gzip: number } }
+    minimal?: { total: { raw: number; gzip: number } }
   }
   runtime: {
     full?: { usesPthread?: boolean; usesSAB?: boolean }
@@ -37,8 +37,8 @@ function fmtMB(n: number): string {
 export const BENCH_SUMMARY_FALLBACK: BenchSummary = {
   generatedAt: '2026-06-14',
   sizes: {
-    full: { total: { raw: 2329900, gzip: 801792, brotli: 618803 } },
-    minimal: { total: { raw: 1114979, gzip: 529300, brotli: 437217 } },
+    full: { total: { raw: 2329900, gzip: 801792 } },
+    minimal: { total: { raw: 942914, gzip: 491429 } },
   },
   runtime: {
     full: { usesPthread: true, usesSAB: true },

@@ -42,8 +42,8 @@ export function OverviewMode({
   const decisionInfo = useMemo(() => {
     if (!preferredResult || !preferredResult.validation) return null
     const decision = preferredResult.validation.decision
-    let text = 'PASS'
-    let badgeClass = 'badge-success'
+    let text: string
+    let badgeClass: string
 
     switch (decision) {
       case 'PASS':
@@ -109,7 +109,7 @@ export function OverviewMode({
       <OverviewExecutiveSummary report={report} results={results} />
 
       {/* 3. DECISION COMPARISON */}
-      <OverviewComparisonTable report={report} results={results} />
+      <OverviewComparisonTable report={report} />
 
       {/* 4. ANALYZE A VIDEO */}
       <section className="card" style={{ marginBottom: 24 }}>

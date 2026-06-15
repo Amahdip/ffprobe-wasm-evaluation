@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { brotliCompressSync, gzipSync } from 'node:zlib'
+import { gzipSync } from 'node:zlib'
 import { readdir, readFile, stat } from 'node:fs/promises'
 import { join, relative } from 'node:path'
 
@@ -36,7 +36,7 @@ async function collectFiles(directory) {
   return files
 }
 
-function classifyFile(relativePath, rawSize) {
+function classifyFile(relativePath) {
   const lowerPath = relativePath.toLowerCase()
 
   if (lowerPath.endsWith('.wasm')) {
@@ -84,14 +84,12 @@ async function analyzeBuild() {
     const buffer = await readFile(filePath)
     const relativePath = relative(DIST_DIR, filePath)
     const gzipSize = gzipSync(buffer).length
-    const brotliSize = brotliCompressSync(buffer).length
 
     rows.push({
       relativePath,
       rawSize: buffer.length,
       gzipSize,
-      brotliSize,
-      kind: classifyFile(relativePath, buffer.length),
+      kind: classifyFile(relativePath),
     })
   }
 
@@ -129,7 +127,7 @@ async function analyzeBuild() {
   } else {
     for (const row of ffprobeRows) {
       console.log(
-        `${row.relativePath}\n  raw: ${formatBytes(row.rawSize)} | gzip: ${formatBytes(row.gzipSize)} | brotli: ${formatBytes(row.brotliSize)}`,
+        `${row.relativePath}\n  raw: ${formatBytes(row.rawSize)} | gzip: ${formatBytes(row.gzipSize)}`,
       )
     }
   }
@@ -144,7 +142,7 @@ async function analyzeBuild() {
   } else {
     for (const row of wasmRows) {
       console.log(
-        `${row.relativePath}\n  raw: ${formatBytes(row.rawSize)} | gzip: ${formatBytes(row.gzipSize)} | brotli: ${formatBytes(row.brotliSize)}`,
+        `${row.relativePath}\n  raw: ${formatBytes(row.rawSize)} | gzip: ${formatBytes(row.gzipSize)}`,
       )
     }
   }
@@ -152,12 +150,12 @@ async function analyzeBuild() {
   console.log('')
   console.log('All dist files')
   console.log('--------------')
-  console.log('file | raw | gzip | brotli | kind')
-  console.log('-----|-----|------|--------|-----')
+  console.log('file | raw | gzip | kind')
+  console.log('-----|-----|------|-----')
 
   for (const row of rows) {
     console.log(
-      `${row.relativePath} | ${formatBytes(row.rawSize)} | ${formatBytes(row.gzipSize)} | ${formatBytes(row.brotliSize)} | ${row.kind}`,
+      `${row.relativePath} | ${formatBytes(row.rawSize)} | ${formatBytes(row.gzipSize)} | ${row.kind}`,
     )
   }
 }

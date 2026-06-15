@@ -23,6 +23,10 @@ deploy/tls/
 # WASM build toolchain and artifacts
 wasm-build/emsdk/
 wasm-build/build/
+wasm-build/*.tar.xz
+
+# Local bench import paths (optional)
+bench-results/
 
 # Editor directories and files
 .vscode/*

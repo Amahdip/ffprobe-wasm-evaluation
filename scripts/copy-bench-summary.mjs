@@ -21,6 +21,27 @@ if (!input) {
 
 const r = JSON.parse(fs.readFileSync(input, 'utf8'))
 
+function stripBrotliFromSizes(sizes) {
+  if (!sizes) return sizes
+  const out = {}
+  for (const [key, block] of Object.entries(sizes)) {
+    const next = { ...block }
+    if (block.perFile) {
+      next.perFile = {}
+      for (const [fileName, metrics] of Object.entries(block.perFile)) {
+        const { brotli: _brotli, ...rest } = metrics
+        next.perFile[fileName] = rest
+      }
+    }
+    if (block.total) {
+      const { brotli: _brotli, ...rest } = block.total
+      next.total = rest
+    }
+    out[key] = next
+  }
+  return out
+}
+
 function median(xs) {
   const s = [...xs].sort((a, b) => a - b)
   return s.length ? s[Math.floor(s.length / 2)] : null
@@ -31,7 +52,7 @@ const minTimes = Object.values(r.minimal?.results ?? {}).map((x) => x.analyzeMs)
 
 const summary = {
   generatedAt: new Date().toISOString(),
-  sizes: r.sizes,
+  sizes: stripBrotliFromSizes(r.sizes),
   runtime: r.runtime,
   aggregate: r.aggregate,
   initMs: { full: r.full?.initMs ?? null, minimal: r.minimal?.initMs ?? null },

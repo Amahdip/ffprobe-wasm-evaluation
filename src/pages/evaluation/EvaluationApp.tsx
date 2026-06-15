@@ -87,7 +87,7 @@ export function EvaluationApp() {
   const [activeTestId, setActiveTestId] = useState<string | null>(null)
   const [testerName, setTesterName] = useState('')
   const [fixtureCheck, setFixtureCheck] = useState<FixtureCheckResult | null>(null)
-  const [fixtureCheckLoading, setFixtureCheckLoading] = useState(true)
+  const [fixtureCheckPhase, setFixtureCheckPhase] = useState<'idle' | 'loading' | 'done'>('idle')
   const [includeOptionalFixtures, setIncludeOptionalFixtures] = useState(false)
   const [matrixError, setMatrixError] = useState<string | null>(null)
   const [benchSummary, setBenchSummary] = useState<BenchSummary>(BENCH_SUMMARY_FALLBACK)
@@ -106,12 +106,11 @@ export function EvaluationApp() {
   }, [])
 
   useEffect(() => {
-    if (!matrix) {
-      setFixtureCheckLoading(false)
-      return
-    }
+    if (!matrix) return
 
-    setFixtureCheckLoading(true)
+    // Intentional: mark loading before async fixture probe (react-hooks/set-state-in-effect).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFixtureCheckPhase('loading')
     checkFixturesForTestCases(matrix.testCases, { includeOptional: includeOptionalFixtures })
       .then(setFixtureCheck)
       .catch(() => setFixtureCheck({
@@ -121,8 +120,10 @@ export function EvaluationApp() {
         checked: 0,
         error: 'Could not verify fixture availability.',
       }))
-      .finally(() => setFixtureCheckLoading(false))
+      .finally(() => setFixtureCheckPhase('done'))
   }, [matrix, includeOptionalFixtures])
+
+  const fixtureCheckLoading = matrix !== null && fixtureCheckPhase === 'loading'
 
   const fixturesReady = fixtureCheck?.available === true
   const fixturesMissing = !fixtureCheckLoading && fixtureCheck !== null && !fixturesReady

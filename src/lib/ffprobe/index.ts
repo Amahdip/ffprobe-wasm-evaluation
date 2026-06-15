@@ -5,7 +5,7 @@ export { buildDimensionDiagnostics, getFieldReliability } from './diagnostics'
 export { buildMetadataSources } from './metadata-sources'
 export type { MetadataSourceMap } from './metadata-sources'
 export { evaluateUploaderValidation, evaluatePreflight } from './uploader-validation'
-export { buildRecommendationFromValidation, decisionBadgeClass, recommendationBadgeClass } from './recommendation'
+export { buildRecommendationFromValidation, decisionBadgeClass, matrixDecisionBadgeClass, recommendationBadgeClass } from './recommendation'
 export {
   getAudioStreams,
   getPrimaryAudioStream,

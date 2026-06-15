@@ -4,22 +4,22 @@
  * Key difference from previous version: uses av_guess_sample_aspect_ratio()
  * instead of raw codecpar->sample_aspect_ratio, matching native ffprobe behavior.
  *
- * Build with Emscripten:
+ * Build with Emscripten (see build.sh — FFmpeg 6.1.2):
  *   emcc ffprobe-mini.c -o ffprobe.js \
  *     -I<ffmpeg-wasm-prefix>/include \
  *     -L<ffmpeg-wasm-prefix>/lib \
- *     -lavformat -lavcodec -lavutil \
+ *     -lavformat -lavcodec -lavutil -lm \
  *     -s EXPORTED_FUNCTIONS='["_get_file_info_json","_free","_malloc"]' \
  *     -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
  *     -s MODULARIZE=1 -s EXPORT_NAME="createFFprobe" \
  *     -s ALLOW_MEMORY_GROWTH=1 -s FORCE_FILESYSTEM=1 \
- *     -O2
+ *     -Oz
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <stdarg.h>
 
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -27,7 +27,6 @@
 #include <libavutil/pixdesc.h>
 #include <libavutil/dict.h>
 #include <libavutil/rational.h>
-#include <libavutil/imgutils.h>
 
 /* ── helpers ─────────────────────────────────────────────────────── */
 
@@ -36,26 +35,47 @@ typedef struct {
     char  *buf;
     size_t len;
     size_t cap;
+    int    oom;
 } DynBuf;
+
+static const char OOM_JSON[] =
+    "{\"ok\":false,\"error\":\"out of memory\"}";
 
 static void db_init(DynBuf *db) {
     db->cap = 8192;
+    db->oom = 0;
     db->buf = (char *)malloc(db->cap);
+    if (!db->buf) {
+        db->oom = 1;
+        return;
+    }
     db->buf[0] = '\0';
     db->len = 0;
 }
 
 static void db_append(DynBuf *db, const char *s) {
+    if (db->oom || !db->buf)
+        return;
     size_t slen = strlen(s);
     while (db->len + slen + 1 > db->cap) {
-        db->cap *= 2;
-        db->buf = (char *)realloc(db->buf, db->cap);
+        size_t new_cap = db->cap * 2;
+        char *new_buf = (char *)realloc(db->buf, new_cap);
+        if (!new_buf) {
+            free(db->buf);
+            db->buf = NULL;
+            db->oom = 1;
+            return;
+        }
+        db->buf = new_buf;
+        db->cap = new_cap;
     }
     memcpy(db->buf + db->len, s, slen + 1);
     db->len += slen;
 }
 
 static void db_printf(DynBuf *db, const char *fmt, ...) {
+    if (db->oom)
+        return;
     char tmp[1024];
     va_list ap;
     va_start(ap, fmt);
@@ -130,6 +150,8 @@ static void emit_tags(DynBuf *db, const AVDictionary *tags) {
 char *get_file_info_json(const char *filename) {
     DynBuf db;
     db_init(&db);
+    if (db.oom)
+        return strdup(OOM_JSON);
 
     AVFormatContext *fmt_ctx = NULL;
     int ret;
@@ -234,7 +256,7 @@ char *get_file_info_json(const char *filename) {
         db_append(&db, ",\"codec_tag_string\":");
         db_append_json_str(&db, tag_str);
 
-        /* profile */
+        /* profile (FF_PROFILE_UNKNOWN matches FFmpeg 6.1.x in build.sh) */
         if (par->profile != FF_PROFILE_UNKNOWN) {
             const char *profile_name = avcodec_profile_name(par->codec_id, par->profile);
             if (profile_name) {
@@ -415,6 +437,11 @@ char *get_file_info_json(const char *filename) {
     db_append(&db, "}");  /* end root object */
 
     avformat_close_input(&fmt_ctx);
+
+    if (db.oom) {
+        free(db.buf);
+        return strdup(OOM_JSON);
+    }
 
     return db.buf;
 }

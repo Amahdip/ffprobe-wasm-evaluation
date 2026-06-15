@@ -5,7 +5,12 @@ interface BundleImpactCardProps {
   selectedEngineId?: string
 }
 
-export function BundleImpactCard({}: BundleImpactCardProps = {}) {
+export function BundleImpactCard({
+  mode: _mode,
+  selectedEngineId: _selectedEngineId,
+}: BundleImpactCardProps = {}) {
+  void _mode
+  void _selectedEngineId
   const tableData = [
     {
       metric: 'Raw payload',

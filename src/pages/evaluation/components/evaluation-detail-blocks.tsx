@@ -162,6 +162,8 @@ export function IssueList({
   )
 }
 
+// Shared with diagnostic callouts in the same feature area.
+// eslint-disable-next-line react-refresh/only-export-components -- utility used by sibling components
 export function diagnosticCalloutClass(conclusion: ValidationResult['diagnostics']['dimensions']['conclusion']): string {
   switch (conclusion) {
     case 'ok':

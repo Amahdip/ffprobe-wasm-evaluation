@@ -338,8 +338,17 @@ export const validationRules: ValidationRule[] = [
     severity: 'warning',
     condition: (ctx) => {
       if (!ctx.metadata.hasVideo) return null
-      const primaryVideo = ctx.fileInfo.streams.find((stream) => stream.index === ctx.metadata.primaryVideoStreamIndex) as any
-      const fieldOrder = ctx.metadata.fieldOrder ?? primaryVideo?.field_order ?? primaryVideo?.tags?.field_order ?? null
+      const primaryVideo = ctx.fileInfo.streams.find(
+        (stream) => stream.index === ctx.metadata.primaryVideoStreamIndex,
+      ) as (typeof ctx.fileInfo.streams)[number] & {
+        field_order?: string | number
+        tags?: { field_order?: string }
+      } | undefined
+      const fieldOrder =
+        ctx.metadata.fieldOrder
+        ?? (primaryVideo?.field_order != null ? String(primaryVideo.field_order) : null)
+        ?? primaryVideo?.tags?.field_order
+        ?? null
       return isInterlacedFieldOrder(fieldOrder) ? `Interlaced video detected (field_order: ${fieldOrder}).` : null
     }
   },

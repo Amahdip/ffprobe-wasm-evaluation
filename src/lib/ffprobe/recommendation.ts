@@ -1,5 +1,3 @@
-import type { ValidationResult } from './types'
-
 export interface RecommendationSummary {
   recommendationLabel: string
   reason: string
@@ -24,7 +22,7 @@ export interface RecommendationSummary {
   summary: string
 }
 
-export function buildRecommendationFromValidation(_result: ValidationResult | null): RecommendationSummary {
+export function buildRecommendationFromValidation(): RecommendationSummary {
   const goodFor = [
     'Container / format detection',
     'Video & audio codec identification',
@@ -69,6 +67,21 @@ export function buildRecommendationFromValidation(_result: ValidationResult | nu
     ],
     productionRisks: risks,
     summary: reason,
+  }
+}
+
+export function matrixDecisionBadgeClass(decision: string): string {
+  switch (decision) {
+    case 'pass':
+      return decisionBadgeClass('PASS')
+    case 'warn':
+      return decisionBadgeClass('WARNING')
+    case 'soft_fail':
+      return decisionBadgeClass('SOFT FAIL')
+    case 'block':
+      return decisionBadgeClass('BLOCKED')
+    default:
+      return decisionBadgeClass('WARNING')
   }
 }
 
