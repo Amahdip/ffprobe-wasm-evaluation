@@ -427,7 +427,7 @@ export const validationRules: ValidationRule[] = [
   {
     id: 'dimensions_not_divisible_by_16',
     group: 'resolution',
-    severity: 'warning',
+    severity: 'info',
     condition: (ctx) => {
       if (!ctx.metadata.hasVideo || ctx.metadata.width === null || ctx.metadata.height === null) return null
       return (ctx.metadata.width % 16 !== 0 || ctx.metadata.height % 16 !== 0)

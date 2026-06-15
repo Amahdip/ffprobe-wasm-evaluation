@@ -40,7 +40,7 @@ export function SizeComparisonCard() {
       <ul className="recommendation-list" style={{ marginTop: 16 }}>
         <li>Initial npm lazy JS chunk in this app was ~8.5 MB raw before optimization.</li>
         <li>Rebuilt full baseline from source is ~2.2 MB raw / ~604 KB brotli (still needs pthreads + COOP/COEP).</li>
-        <li>Optimized minimal-metadata is ~920 KB raw / ~401 KB brotli and removes SharedArrayBuffer requirements.</li>
+        <li>Optimized minimal-metadata is ~4.4 MB raw / ~1.1 MB brotli and removes SharedArrayBuffer requirements.</li>
       </ul>
     </section>
   )

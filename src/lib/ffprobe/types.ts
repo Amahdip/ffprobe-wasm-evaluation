@@ -57,6 +57,7 @@ export interface NormalizedMetadata {
   colorRange: string | null
   colorPrimaries: string | null
   colorTransfer: string | null
+  colorSpace: string | null
   isHdr: boolean
   is10Bit: boolean
   isInterlaced: boolean
