@@ -41,14 +41,14 @@ export const ENGINE_BUNDLE_PROFILES: Record<string, EngineBundleProfile> = {
 	'minimal-metadata-ffprobe': {
 		id: 'minimal-metadata-ffprobe',
 		name: 'minimal-metadata-ffprobe',
-		lazyChunkGzip: '~1.5 MiB gzip',
-		lazyChunkBrotli: '~1.1 MiB brotli',
+		lazyChunkGzip: '~530 KB gzip',
+		lazyChunkBrotli: '~430 KB brotli',
 		lazyLoaded: true,
 		wasmDelivery: 'Standalone .wasm + lazy loader script',
-		firstLoadRisk: '~4.4 MB raw on first analyze',
+		firstLoadRisk: '~1.1 MB raw on first analyze',
 		coopCoepRequired: false,
 		technicalLines: [
-			'minimal-metadata: ~4.4 MB raw / ~1.5 MiB gzip / ~1.1 MiB brotli',
+			'minimal-metadata: ~1.1 MB raw / ~530 KB gzip / ~430 KB brotli',
 			'Single-threaded; served from /engines/minimal-metadata/',
 			'No SharedArrayBuffer or cross-origin isolation required',
 		],
