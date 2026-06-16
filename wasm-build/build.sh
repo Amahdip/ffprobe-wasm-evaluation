@@ -14,7 +14,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="$SCRIPT_DIR/build"
-FFMPEG_VERSION="6.1.2"
+FFMPEG_VERSION="7.1"
 FFMPEG_DIR="$BUILD_DIR/ffmpeg-${FFMPEG_VERSION}"
 FFMPEG_PREFIX="$BUILD_DIR/ffmpeg-wasm-install"
 OUTPUT_DIR="$SCRIPT_DIR/../public/engines/minimal-metadata"
@@ -75,8 +75,8 @@ if [ ! -f "$FFMPEG_PREFIX/lib/libavformat.a" ]; then
         --enable-avcodec \
         --enable-avutil \
         --enable-protocol=file \
-        --enable-demuxer=mov,matroska,webm_dash_manifest,avi,flv,mp3,wav,aac,ogg,concat \
-        --enable-parser=h264,hevc,aac,mpegaudio,vp8,vp9,av1,mpeg4video,mjpeg \
+        --enable-demuxer=mov,matroska,webm_dash_manifest,avi,flv,mp3,wav,aac,ogg,concat,mpegts,mpegps,mpegvideo,asf,yuv4mpegpipe,mv \
+        --enable-parser=h264,hevc,aac,mpegaudio,vp8,vp9,av1,mpeg4video,mjpeg,mpegvideo,vc1 \
         --disable-autodetect \
         --disable-hwaccels \
         --disable-devices \
@@ -118,10 +118,16 @@ emcc "$SCRIPT_DIR/ffprobe-mini.c" \
     -s STACK_SIZE=1048576 \
     -s NO_EXIT_RUNTIME=1
 
+echo "=== Gzipping output artifacts ==="
+gzip -k -f "$OUTPUT_DIR/ffprobe.js"
+gzip -k -f "$OUTPUT_DIR/ffprobe.wasm"
+
 echo ""
 echo "=== Build complete ==="
 echo "Output:"
 ls -lh "$OUTPUT_DIR/ffprobe.js" "$OUTPUT_DIR/ffprobe.wasm"
+ls -lh "$OUTPUT_DIR/ffprobe.js.gz" "$OUTPUT_DIR/ffprobe.wasm.gz"
 echo ""
 echo "WASM size (uncompressed): $(wc -c < "$OUTPUT_DIR/ffprobe.wasm" | tr -d ' ') bytes"
+echo "WASM size (gzip):         $(wc -c < "$OUTPUT_DIR/ffprobe.wasm.gz" | tr -d ' ') bytes"
 echo "Done! ✅"

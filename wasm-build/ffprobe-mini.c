@@ -240,10 +240,10 @@ char *get_file_info_json(const char *filename) {
         db_printf(&db, ",\"codec_type\":\"%s\"", type_str);
 
         /* codec name */
-        const AVCodec *codec = avcodec_find_decoder(par->codec_id);
-        if (codec && codec->name) {
+        const char *codec_name = avcodec_get_name(par->codec_id);
+        if (codec_name) {
             db_append(&db, ",\"codec_name\":");
-            db_append_json_str(&db, codec->name);
+            db_append_json_str(&db, codec_name);
         } else {
             db_append(&db, ",\"codec_name\":null");
         }

@@ -6,16 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:analyze": "npm run build && node scripts/analyze-build-sizes.mjs",
-    "analyze": "node scripts/analyze-build-sizes.mjs",
-    "fixtures:generate": "bash scripts/compatibility/generate-fixtures.sh",
-    "fixtures:generate:optional": "GENERATE_OPTIONAL=1 bash scripts/compatibility/generate-fixtures.sh",
-    "fixtures:manifest": "node scripts/compatibility/write-fixture-manifest.mjs && cp compatibility/test-matrix.json public/compatibility/test-matrix.json",
-    "fixtures:ensure": "node scripts/compatibility/ensure-core-fixtures.mjs",
-    "samples:import-downloads": "bash scripts/compatibility/import-downloads.sh",
-    "prebuild": "npm run fixtures:ensure && node scripts/copy-bench-summary.mjs",
-    "build:deploy": "npm run build",
-    "verify:deployment": "bash scripts/verify-deployment.sh",
     "lint": "eslint .",
     "preview": "vite preview"
   },
