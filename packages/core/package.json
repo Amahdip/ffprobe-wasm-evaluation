@@ -1,0 +1,32 @@
+{
+  "name": "@aparat/ffprobe-wasm",
+  "version": "1.0.0",
+  "description": "Zero-configuration client-side H.264 metadata probe and validation engine powered by WebAssembly.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && cp src/ffprobe.js dist/"
+  },
+  "keywords": [
+    "ffprobe",
+    "wasm",
+    "ffmpeg",
+    "metadata",
+    "video",
+    "audio",
+    "validation"
+  ],
+  "author": "Aparat Team",
+  "license": "ISC"
+}

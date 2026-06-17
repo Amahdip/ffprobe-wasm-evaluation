@@ -75,8 +75,10 @@ if [ ! -f "$FFMPEG_PREFIX/lib/libavformat.a" ]; then
         --enable-avcodec \
         --enable-avutil \
         --enable-protocol=file \
-        --enable-demuxer=mov,matroska,webm_dash_manifest,avi,flv,mp3,wav,aac,ogg,concat,mpegts,mpegps,mpegvideo,asf,yuv4mpegpipe,mv \
+        --enable-demuxer=mov,matroska,webm_dash_manifest,avi,flv,mp3,wav,aac,ogg,concat,mpegts,mpegps,mpegvideo,asf,yuv4mpegpipe,mv,hevc,h264,mjpeg,image2,m4v \
         --enable-parser=h264,hevc,aac,mpegaudio,vp8,vp9,av1,mpeg4video,mjpeg,mpegvideo,vc1 \
+        --enable-decoder=h264 \
+        --enable-small \
         --disable-autodetect \
         --disable-hwaccels \
         --disable-devices \
@@ -122,12 +124,38 @@ echo "=== Gzipping output artifacts ==="
 gzip -k -f "$OUTPUT_DIR/ffprobe.js"
 gzip -k -f "$OUTPUT_DIR/ffprobe.wasm"
 
+# ── Step 4: Compile single-file base64 version for NPM Package ────
+CORE_OUTPUT_DIR="$SCRIPT_DIR/../packages/core/src"
+echo "=== Building single-file ffprobe.js for NPM Package ==="
+mkdir -p "$CORE_OUTPUT_DIR"
+
+emcc "$SCRIPT_DIR/ffprobe-mini.c" \
+    -I"$FFMPEG_PREFIX/include" \
+    -L"$FFMPEG_PREFIX/lib" \
+    -lavformat -lavcodec -lavutil \
+    -lm \
+    -o "$CORE_OUTPUT_DIR/ffprobe.js" \
+    -Oz \
+    -s MODULARIZE=1 \
+    -s EXPORT_NAME="createFFprobe" \
+    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_free","_malloc"]' \
+    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS"]' \
+    -s ALLOW_MEMORY_GROWTH=1 \
+    -s FORCE_FILESYSTEM=1 \
+    -s TOTAL_MEMORY=33554432 \
+    -s STACK_SIZE=1048576 \
+    -s NO_EXIT_RUNTIME=1 \
+    -s SINGLE_FILE=1 \
+    -s EXPORT_ES6=1
+
 echo ""
 echo "=== Build complete ==="
 echo "Output:"
 ls -lh "$OUTPUT_DIR/ffprobe.js" "$OUTPUT_DIR/ffprobe.wasm"
 ls -lh "$OUTPUT_DIR/ffprobe.js.gz" "$OUTPUT_DIR/ffprobe.wasm.gz"
+ls -lh "$CORE_OUTPUT_DIR/ffprobe.js"
 echo ""
 echo "WASM size (uncompressed): $(wc -c < "$OUTPUT_DIR/ffprobe.wasm" | tr -d ' ') bytes"
 echo "WASM size (gzip):         $(wc -c < "$OUTPUT_DIR/ffprobe.wasm.gz" | tr -d ' ') bytes"
+echo "Single file size:         $(wc -c < "$CORE_OUTPUT_DIR/ffprobe.js" | tr -d ' ') bytes"
 echo "Done! ✅"

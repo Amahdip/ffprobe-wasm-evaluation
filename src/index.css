@@ -1,9 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
 
 :root {
+  /* Common variables */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --glass-filter: blur(16px);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s ease;
+
+  /* Theme-specific variables (Default: Dark Theme) */
   --bg-app: #08080a;
+  --bg-header: rgba(8, 8, 10, 0.85);
   --bg-card: rgba(18, 18, 24, 0.75);
   --bg-card-hover: rgba(26, 26, 36, 0.85);
+  --bg-metric-card: rgba(0, 0, 0, 0.25);
+  --bg-well: rgba(0, 0, 0, 0.22);
+  --bg-input: rgba(0, 0, 0, 0.3);
+  --bg-input-hover: rgba(0, 0, 0, 0.38);
+  --bg-input-focus: rgba(0, 0, 0, 0.4);
+  --bg-table: rgba(0, 0, 0, 0.2);
+  --bg-table-th: rgba(255, 255, 255, 0.03);
+  --bg-code: rgba(0, 0, 0, 0.45);
+  --text-code: #22c55e;
+  --bg-overlay: rgba(8, 8, 10, 0.92);
+  
   --primary: #22c55e;
   --primary-hover: #4ade80;
   --primary-glow: rgba(34, 197, 94, 0.25);
@@ -24,17 +47,60 @@
   --accent: var(--warning);
   --accent-glow: rgba(245, 158, 11, 0.15);
   --danger: var(--error);
+  
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --border-color: rgba(255, 255, 255, 0.08);
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Outfit', system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --radius-lg: 16px;
-  --radius-md: 10px;
-  --glass-filter: blur(16px);
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: all 0.15s ease;
+  --border-color-hover: rgba(255, 255, 255, 0.14);
+
+  --bg-glow-1: rgba(34, 197, 94, 0.03);
+  --bg-glow-2: rgba(245, 158, 11, 0.02);
+}
+
+:root[data-theme="light"] {
+  --bg-app: #f8fafc;
+  --bg-header: rgba(255, 255, 255, 0.85);
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --bg-metric-card: rgba(15, 23, 42, 0.03);
+  --bg-well: rgba(15, 23, 42, 0.04);
+  --bg-input: #ffffff;
+  --bg-input-hover: #f1f5f9;
+  --bg-input-focus: #ffffff;
+  --bg-table: rgba(15, 23, 42, 0.02);
+  --bg-table-th: rgba(15, 23, 42, 0.02);
+  --bg-code: #1e293b;
+  --text-code: #38bdf8;
+  --bg-overlay: rgba(248, 250, 252, 0.92);
+  
+  --primary: #16a34a;
+  --primary-hover: #15803d;
+  --primary-glow: rgba(22, 163, 74, 0.15);
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --error: #dc2626;
+  --error-bg: #fee2e2;
+  --info: #2563eb;
+  --info-bg: #dbeafe;
+  --diagnostic: #7c3aed;
+  --diagnostic-bg: #ede9fe;
+  --performance: #ea580c;
+  --performance-bg: #ffedd5;
+  --fallback: #ca8a04;
+  --fallback-bg: #fef9c3;
+  --accent: var(--warning);
+  --accent-glow: rgba(217, 119, 6, 0.15);
+  --danger: var(--error);
+  
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --border-color: rgba(15, 23, 42, 0.08);
+  --border-color-hover: rgba(15, 23, 42, 0.15);
+
+  --bg-glow-1: rgba(22, 163, 74, 0.06);
+  --bg-glow-2: rgba(217, 119, 6, 0.04);
 }
 
 * { box-sizing: border-box; }
@@ -47,8 +113,9 @@ body {
   font-family: var(--font-sans);
   line-height: 1.6;
   background-image:
-    radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.02) 0%, transparent 45%);
+    radial-gradient(circle at 10% 20%, var(--bg-glow-1) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, var(--bg-glow-2) 0%, transparent 45%);
+  transition: background var(--transition-smooth), color var(--transition-smooth);
 }
 
 #root { min-height: 100vh; }
@@ -65,9 +132,10 @@ body {
   top: 0;
   z-index: 100;
   border-bottom: 1px solid var(--border-color);
-  background: rgba(8, 8, 10, 0.85);
+  background: var(--bg-header);
   backdrop-filter: var(--glass-filter);
   padding: 16px 0;
+  transition: background var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .header-content {
@@ -163,6 +231,7 @@ body {
   border-radius: var(--radius-lg);
   padding: 24px;
   margin-bottom: 24px;
+  transition: background var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .card-title {
@@ -179,10 +248,11 @@ body {
 }
 
 .metric-card {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--bg-metric-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 16px;
+  transition: background var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .metric-title {
@@ -228,7 +298,7 @@ body {
   padding: 11px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-input);
   color: var(--text-main);
   font-family: var(--font-sans);
   font-size: 15px;
@@ -238,8 +308,8 @@ body {
 
 .form-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
-  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  background: var(--bg-input-focus);
 }
 
 .form-input::placeholder {
@@ -255,18 +325,18 @@ body {
   padding: 6px 12px 6px 6px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-input);
   transition: var(--transition-smooth);
 }
 
 .file-picker:hover {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(0, 0, 0, 0.38);
+  border-color: var(--border-color-hover);
+  background: var(--bg-input-hover);
 }
 
 .file-picker:focus-within {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .file-picker:focus-within .file-picker__button {
@@ -337,7 +407,7 @@ body {
   padding: 11px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-input);
   cursor: pointer;
   font-size: 14px;
   color: var(--text-main);
@@ -346,8 +416,8 @@ body {
 }
 
 .form-checkbox:hover {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(0, 0, 0, 0.38);
+  border-color: var(--border-color-hover);
+  background: var(--bg-input-hover);
 }
 
 .form-checkbox input[type='checkbox'] {
@@ -422,7 +492,7 @@ body {
   overflow: auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-table);
 }
 
 .workout-table {
@@ -444,7 +514,7 @@ body {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-table-th);
 }
 
 .db-viewer {
@@ -453,11 +523,12 @@ body {
   overflow: auto;
   max-height: 420px;
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--bg-code);
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.5;
-  color: #10b981;
+  color: var(--text-code);
+  transition: background var(--transition-smooth), color var(--transition-smooth);
 }
 
 .meta-grid {
@@ -467,9 +538,10 @@ body {
 }
 
 .meta-item {
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--bg-well);
   border-radius: var(--radius-md);
   padding: 12px;
+  transition: background var(--transition-smooth);
 }
 
 .meta-item dt {
@@ -493,10 +565,11 @@ body {
 }
 
 .source-item {
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--bg-well);
   border-radius: var(--radius-md);
   padding: 12px;
   border: 1px solid var(--border-color);
+  transition: background var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .source-item dt {
@@ -541,8 +614,9 @@ body {
   gap: 16px;
   padding: 12px 14px;
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.22);
+  background: var(--bg-well);
   border: 1px solid var(--border-color);
+  transition: background var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .summary-row__label {
@@ -570,8 +644,9 @@ body {
   gap: 10px;
   padding: 12px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-color);
+  background: var(--bg-well);
+  transition: background var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .bundle-engine-block + .bundle-engine-block {
@@ -582,7 +657,8 @@ body {
   margin-top: 16px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.18);
+  background: var(--bg-well);
+  transition: background var(--transition-smooth), border-color var(--transition-smooth);
 }
 
 .technical-details summary {
