@@ -147,6 +147,23 @@ function renderJsonWithDiff(
   );
 }
 
+function normalizeMinimalForDiff(minObj: any) {
+  if (!minObj) return minObj
+  return {
+    streams: minObj.streams || [],
+    format: {
+      nb_streams: minObj.nb_streams,
+      format_name: minObj.format_name,
+      format_long_name: minObj.format_long_name,
+      duration: minObj.duration,
+      size: minObj.size,
+      bit_rate: minObj.bit_rate,
+      probe_score: minObj.probe_score,
+      tags: minObj.tags,
+    }
+  }
+}
+
 export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
@@ -634,7 +651,7 @@ export default function App() {
                 {viewMode === 'minimal' ? (
                   JSON.stringify(rawJson, null, 2)
                 ) : fullJson ? (
-                  renderJsonWithDiff(fullJson, rawJson)
+                  renderJsonWithDiff(fullJson, normalizeMinimalForDiff(rawJson))
                 ) : (
                   <span style={{ color: 'var(--error)' }}>System ffprobe CLI result is not available (dev server mode only).</span>
                 )}
