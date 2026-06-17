@@ -1,4 +1,4 @@
-import type { FileInfo } from 'ffprobe-wasm'
+import type { FileInfo } from '../lib/ffprobe/types'
 import type { DimensionDiagnostics, NormalizedMetadata, UploaderPolicy } from '../lib/ffprobe/types'
 import {
   containerAllowed,

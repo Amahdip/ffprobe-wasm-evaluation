@@ -1,4 +1,4 @@
-import type { FileInfo } from 'ffprobe-wasm'
+import type { FileInfo } from './types'
 import { getPrimaryVideoStream } from './stream-utils'
 import type { DimensionDiagnostics, NormalizedMetadata } from './types'
 
@@ -77,7 +77,7 @@ export function buildDimensionDiagnostics(
 
   return {
     normalizerUsesPrimaryVideoStream: true,
-    primaryVideoStreamIndex: primaryVideo.index,
+    primaryVideoStreamIndex: primaryVideo.index ?? null,
     normalizedWidth: metadata.width,
     normalizedHeight: metadata.height,
     rawVideoWidth: videoDims.rawWidth,

@@ -1,4 +1,4 @@
-import type { FileInfo } from 'ffprobe-wasm'
+import type { FileInfo } from './types'
 import { buildDimensionDiagnostics, getFieldReliability } from './diagnostics'
 import { buildMetadataSources } from './metadata-sources'
 import { normalizeMetadata } from './normalize-metadata'

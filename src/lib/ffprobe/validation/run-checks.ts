@@ -1,4 +1,4 @@
-import type { FileInfo } from 'ffprobe-wasm'
+import type { FileInfo } from '../types'
 import type { DimensionDiagnostics, NormalizedMetadata, UploaderPolicy, ValidationCheckGroup, ValidationIssue } from '../types'
 import { validationRules, type RuleContext } from '../../../config/validationRules'
 

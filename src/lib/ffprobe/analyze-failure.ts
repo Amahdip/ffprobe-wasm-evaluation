@@ -1,4 +1,4 @@
-import type { FileInfo } from 'ffprobe-wasm'
+import type { FileInfo } from './types'
 import type { FileContext, UploaderPolicy } from './types'
 import { DEFAULT_UPLOADER_POLICY } from './types'
 import { evaluateUploaderValidation } from './uploader-validation'

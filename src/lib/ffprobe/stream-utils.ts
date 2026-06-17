@@ -1,4 +1,4 @@
-import type { FileInfo } from 'ffprobe-wasm'
+import type { FileInfo } from './types'
 
 export type MediaStream = FileInfo['streams'][number]
 

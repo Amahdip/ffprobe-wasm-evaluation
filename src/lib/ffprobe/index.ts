@@ -1,5 +1,4 @@
 export { buildAnalyzeFailureResult } from './analyze-failure'
-export { analyzeVideoFile, createTimings, loadFfprobe, preloadFfprobe } from './load-ffprobe'
 export { normalizeMetadata } from './normalize-metadata'
 export { buildDimensionDiagnostics, getFieldReliability } from './diagnostics'
 export { buildMetadataSources } from './metadata-sources'
