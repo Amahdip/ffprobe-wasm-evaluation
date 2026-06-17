@@ -82,12 +82,14 @@ export default defineConfig({
   ],
   server: {
     headers: crossOriginIsolationHeaders,
+    host: true,
   },
   optimizeDeps: {
     entries: ['index.html'],
   },
   preview: {
     headers: crossOriginIsolationHeaders,
+    host: true,
   },
   build: {
     rollupOptions: {
