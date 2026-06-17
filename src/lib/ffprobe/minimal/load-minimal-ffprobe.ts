@@ -92,10 +92,6 @@ export async function analyzeWithMinimalFfprobe(file: File): Promise<{
   probe: MinimalProbeResult
   timings: FfprobeTimings
 }> {
-  if (!window.isSecureContext) {
-    throw new Error('Minimal ffprobe requires a secure context (HTTPS or localhost).')
-  }
-
   const totalStart = performance.now()
   const importStart = performance.now()
   const Module = await getModule()
