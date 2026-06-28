@@ -108,12 +108,13 @@ emcc "$SCRIPT_DIR/ffprobe-mini.c" \
     -L"$FFMPEG_PREFIX/lib" \
     -lavformat -lavcodec -lavutil \
     -lm \
+    -lworkerfs.js \
     -o "$OUTPUT_DIR/ffprobe.js" \
     -Oz \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="createFFprobe" \
     -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_free","_malloc"]' \
-    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS"]' \
+    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS","WORKERFS"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s FORCE_FILESYSTEM=1 \
     -s TOTAL_MEMORY=33554432 \
@@ -134,12 +135,13 @@ emcc "$SCRIPT_DIR/ffprobe-mini.c" \
     -L"$FFMPEG_PREFIX/lib" \
     -lavformat -lavcodec -lavutil \
     -lm \
+    -lworkerfs.js \
     -o "$CORE_OUTPUT_DIR/ffprobe.js" \
     -Oz \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="createFFprobe" \
     -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_free","_malloc"]' \
-    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS"]' \
+    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS","WORKERFS"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s FORCE_FILESYSTEM=1 \
     -s TOTAL_MEMORY=33554432 \

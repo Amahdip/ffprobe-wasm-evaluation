@@ -1,91 +1,51 @@
-import type { CreateMinimalFfprobe, MinimalProbeResult, MinimalWasmModule } from './types'
+import type { MinimalProbeResult } from './types'
 import type { FfprobeTimings } from '../types'
 
-const SCRIPT_URL = '/engines/minimal-metadata/ffprobe.js'
-const WASM_BASE = '/engines/minimal-metadata/'
+// Classic worker served statically from public/. It importScripts() the
+// Emscripten glue and mounts the File via WORKERFS, so the file is read
+// lazily (only the byte ranges ffprobe seeks to) instead of being copied
+// into memory. This removes the old ~2GB arrayBuffer()/MEMFS ceiling.
+const WORKER_URL = '/engines/minimal-metadata/ffprobe.worker.js'
 
-declare global {
-  interface Window {
-    createFFprobe?: CreateMinimalFfprobe
+type WorkerResult =
+  | { type: 'ready'; id: number }
+  | { type: 'result'; id: number; ok: true; json: string; importMs: number; analyzeMs: number }
+  | { type: 'result'; id: number; ok: false; error: string }
+
+let worker: Worker | null = null
+let nextId = 1
+const pending = new Map<number, { resolve: (r: WorkerResult) => void; reject: (e: Error) => void }>()
+
+function getWorker(): Worker {
+  if (worker) return worker
+
+  const w = new Worker(WORKER_URL)
+  w.onmessage = (e: MessageEvent<WorkerResult>) => {
+    const msg = e.data
+    const entry = pending.get(msg.id)
+    if (!entry) return
+    pending.delete(msg.id)
+    entry.resolve(msg)
   }
+  w.onerror = (e) => {
+    // A worker-level error rejects every in-flight request; the worker is
+    // discarded so the next call spins up a fresh one.
+    const err = new Error(e.message || 'Minimal ffprobe worker crashed')
+    for (const { reject } of pending.values()) reject(err)
+    pending.clear()
+    worker = null
+  }
+  worker = w
+  return w
 }
 
-let scriptPromise: Promise<CreateMinimalFfprobe> | null = null
-let modulePromise: Promise<MinimalWasmModule> | null = null
-
-function loadScript(): Promise<CreateMinimalFfprobe> {
-  if (scriptPromise) return scriptPromise
-
-  scriptPromise = new Promise((resolve, reject) => {
-    if (window.createFFprobe) {
-      resolve(window.createFFprobe)
-      return
-    }
-
-    const existing = document.querySelector(`script[src="${SCRIPT_URL}"]`)
-    if (existing) {
-      existing.addEventListener('load', () => {
-        if (window.createFFprobe) resolve(window.createFFprobe)
-        else reject(new Error('minimal ffprobe script loaded but createFFprobe missing'))
-      })
-      existing.addEventListener('error', () => reject(new Error('Failed to load minimal ffprobe script')))
-      return
-    }
-
-    const script = document.createElement('script')
-    script.src = SCRIPT_URL
-    script.async = true
-    script.onload = () => {
-      if (window.createFFprobe) resolve(window.createFFprobe)
-      else reject(new Error('minimal ffprobe script loaded but createFFprobe missing'))
-    }
-    script.onerror = () => reject(new Error(`Failed to load ${SCRIPT_URL}`))
-    document.head.appendChild(script)
+function send(message: { type: 'preload' | 'probe'; file?: File }): Promise<WorkerResult> {
+  const w = getWorker()
+  const id = nextId++
+  return new Promise<WorkerResult>((resolve, reject) => {
+    pending.set(id, { resolve, reject })
+    w.postMessage({ ...message, id })
   })
-
-  return scriptPromise
-}
-
-async function getModule(): Promise<MinimalWasmModule> {
-  if (!modulePromise) {
-    modulePromise = (async () => {
-      const createFFprobe = await loadScript()
-      return createFFprobe({
-        locateFile: (path) => `${WASM_BASE}${path}`,
-      })
-    })()
-  }
-  return modulePromise
-}
-
-function sanitizePath(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._-]/g, '_')
-}
-
-function writeVirtualFile(module: MinimalWasmModule, virtualPath: string, data: Uint8Array): void {
-  if (module.FS?.writeFile) {
-    module.FS.writeFile(virtualPath, data)
-    return
-  }
-
-  if (module.FS_createDataFile) {
-    const lastSlash = virtualPath.lastIndexOf('/')
-    const parent = lastSlash >= 0 ? virtualPath.slice(0, lastSlash) || '/' : '/'
-    const name = lastSlash >= 0 ? virtualPath.slice(lastSlash + 1) : virtualPath
-    module.FS_createDataFile(parent, name, data, true, true, true)
-    return
-  }
-
-  throw new Error('Minimal ffprobe module has no MEMFS write API (FS.writeFile or FS_createDataFile)')
-}
-
-function unlinkVirtualFile(module: MinimalWasmModule, virtualPath: string): void {
-  if (module.FS_unlink) {
-    module.FS_unlink(virtualPath)
-    return
-  }
-
-  module.FS?.unlink?.(virtualPath)
 }
 
 export async function analyzeWithMinimalFfprobe(file: File): Promise<{
@@ -93,42 +53,27 @@ export async function analyzeWithMinimalFfprobe(file: File): Promise<{
   timings: FfprobeTimings
 }> {
   const totalStart = performance.now()
-  const importStart = performance.now()
-  const Module = await getModule()
-  const importMs = performance.now() - importStart
-  const initMs = 0
+  const res = await send({ type: 'probe', file })
 
-  const virtualPath = `/probe_${Date.now()}_${sanitizePath(file.name)}`
-  const analyzeStart = performance.now()
+  if (res.type !== 'result') {
+    throw new Error('Unexpected response from minimal ffprobe worker')
+  }
+  if (!res.ok) {
+    throw new Error(res.error)
+  }
 
-  try {
-    const data = new Uint8Array(await file.arrayBuffer())
-    writeVirtualFile(Module, virtualPath, data)
-    const json = Module.ccall('get_file_info_json', 'string', ['string'], [virtualPath])
-    if (!json) {
-      throw new Error('Minimal ffprobe returned an empty response')
-    }
-    const probe = JSON.parse(json) as MinimalProbeResult
-    const analyzeMs = performance.now() - analyzeStart
-
-    return {
-      probe,
-      timings: {
-        importMs,
-        initMs,
-        analyzeMs,
-        totalMs: performance.now() - totalStart,
-      },
-    }
-  } finally {
-    try {
-      unlinkVirtualFile(Module, virtualPath)
-    } catch {
-      // ignore cleanup errors
-    }
+  const probe = JSON.parse(res.json) as MinimalProbeResult
+  return {
+    probe,
+    timings: {
+      importMs: res.importMs,
+      initMs: 0,
+      analyzeMs: res.analyzeMs,
+      totalMs: performance.now() - totalStart,
+    },
   }
 }
 
 export async function preloadMinimalFfprobe(): Promise<void> {
-  await getModule()
+  await send({ type: 'preload' })
 }

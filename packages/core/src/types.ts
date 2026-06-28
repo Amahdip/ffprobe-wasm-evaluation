@@ -53,11 +53,23 @@ export interface MinimalProbeResult {
   tags?: MinimalStreamTag
 }
 
+/** Emscripten WORKERFS mount options (subset we use). */
+export interface WorkerFsMountOptions {
+  blobs?: Array<{ name: string; data: Blob }>
+  files?: File[]
+}
+
 export interface MinimalWasmModule {
-  FS?: {
+  FS: {
     writeFile?: (path: string, data: Uint8Array) => void
     unlink?: (path: string) => void
+    mkdir: (path: string) => void
+    rmdir: (path: string) => void
+    mount: (type: unknown, opts: WorkerFsMountOptions, mountpoint: string) => void
+    unmount: (mountpoint: string) => void
   }
+  /** WORKERFS filesystem backend (present when built with -lworkerfs.js). */
+  WORKERFS: unknown
   FS_createDataFile?: (
     parent: string,
     name: string,
