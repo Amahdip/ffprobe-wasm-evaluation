@@ -123,7 +123,6 @@ const EMPTY_RAW: Record<keyof PocOptions, string> = {
 
 export default function BitratePocPage() {
   const [raw, setRaw] = useState<Record<keyof PocOptions, string>>(EMPTY_RAW)
-  const [usedOpts, setUsedOpts] = useState<PocOptions>(DEFAULT_POC_OPTIONS)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<PocResult | null>(null)
@@ -151,7 +150,6 @@ export default function BitratePocPage() {
       setBench(null)
       try {
         const opts = resolveOpts()
-        setUsedOpts(opts)
         const t0 = performance.now()
         const walk = await walkVideoPackets(file)
         const res = analyzePackets(walk.packets, opts)
