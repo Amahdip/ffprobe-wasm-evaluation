@@ -145,6 +145,96 @@ static void emit_tags(DynBuf *db, const AVDictionary *tags) {
     db_append(db, "}");
 }
 
+/* ── packet walk (PoC: content-aware bitrate) ─────────────────────────
+ *
+ * walk_video_packets() demuxes the best video stream WITHOUT decoding and
+ * returns a flat, malloc'd double buffer the JS side reads via HEAPF64:
+ *
+ *   out[0]               = packet count N (as double)
+ *   out[1 + 3*i + 0]     = pts_time in seconds, offset so the first packet = 0
+ *   out[1 + 3*i + 1]     = packet size in bytes
+ *   out[1 + 3*i + 2]     = 1.0 if keyframe (AV_PKT_FLAG_KEY / IDR) else 0.0
+ *
+ * Caller MUST Module._free() the returned pointer. Returns NULL on error
+ * (open failed / no video stream). No decoder is used, so this works for
+ * every demuxer enabled in build.sh regardless of codec support.
+ *
+ * This is the server-side `ffprobe -select_streams v:0 -show_packets
+ * -show_entries packet=pts_time,size,flags` reduced to the three fields the
+ * bitrate math needs, packed binary instead of text so a multi-hour file's
+ * packet table never becomes a giant JSON string in WASM memory.
+ */
+double *walk_video_packets(const char *filename) {
+    AVFormatContext *fmt_ctx = NULL;
+    if (avformat_open_input(&fmt_ctx, filename, NULL, NULL) < 0)
+        return NULL;
+    if (avformat_find_stream_info(fmt_ctx, NULL) < 0) {
+        avformat_close_input(&fmt_ctx);
+        return NULL;
+    }
+
+    int vstream = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    if (vstream < 0) {
+        avformat_close_input(&fmt_ctx);
+        return NULL;
+    }
+
+    double tbd = av_q2d(fmt_ctx->streams[vstream]->time_base);
+
+    size_t cap = 4096;   /* capacity in doubles */
+    size_t len = 1;      /* index 0 reserved for the packet count */
+    double *buf = (double *)malloc(cap * sizeof(double));
+    if (!buf) {
+        avformat_close_input(&fmt_ctx);
+        return NULL;
+    }
+
+    AVPacket *pkt = av_packet_alloc();
+    if (!pkt) {
+        free(buf);
+        avformat_close_input(&fmt_ctx);
+        return NULL;
+    }
+
+    long long n = 0;
+    int have_t0 = 0;
+    double t0 = 0.0;
+
+    while (av_read_frame(fmt_ctx, pkt) >= 0) {
+        if (pkt->stream_index == vstream) {
+            int64_t ts = (pkt->pts != AV_NOPTS_VALUE) ? pkt->pts : pkt->dts;
+            double pts_s = (ts != AV_NOPTS_VALUE) ? (double)ts * tbd : 0.0;
+            if (!have_t0) { t0 = pts_s; have_t0 = 1; }
+            double rel = pts_s - t0;
+            if (rel < 0) rel = 0;
+
+            if (len + 3 > cap) {
+                cap *= 2;
+                double *nb = (double *)realloc(buf, cap * sizeof(double));
+                if (!nb) {
+                    free(buf);
+                    av_packet_unref(pkt);
+                    av_packet_free(&pkt);
+                    avformat_close_input(&fmt_ctx);
+                    return NULL;
+                }
+                buf = nb;
+            }
+            buf[len++] = rel;
+            buf[len++] = (double)pkt->size;
+            buf[len++] = (pkt->flags & AV_PKT_FLAG_KEY) ? 1.0 : 0.0;
+            n++;
+        }
+        av_packet_unref(pkt);
+    }
+
+    av_packet_free(&pkt);
+    avformat_close_input(&fmt_ctx);
+
+    buf[0] = (double)n;
+    return buf;
+}
+
 /* ── main probe function ──────────────────────────────────────────── */
 
 char *get_file_info_json(const char *filename) {

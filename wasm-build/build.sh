@@ -113,8 +113,8 @@ emcc "$SCRIPT_DIR/ffprobe-mini.c" \
     -Oz \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="createFFprobe" \
-    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_free","_malloc"]' \
-    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS","WORKERFS"]' \
+    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_walk_video_packets","_free","_malloc"]' \
+    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS","WORKERFS","HEAPF64"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s FORCE_FILESYSTEM=1 \
     -s TOTAL_MEMORY=33554432 \
@@ -140,8 +140,8 @@ emcc "$SCRIPT_DIR/ffprobe-mini.c" \
     -Oz \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="createFFprobe" \
-    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_free","_malloc"]' \
-    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS","WORKERFS"]' \
+    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_walk_video_packets","_free","_malloc"]' \
+    -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS","WORKERFS","HEAPF64"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s FORCE_FILESYSTEM=1 \
     -s TOTAL_MEMORY=33554432 \

@@ -66,8 +66,60 @@ async function probe(file) {
   }
 }
 
+/*
+ * walkPackets — PoC packet walk. Calls the C walk_video_packets(), which
+ * returns a pointer to a flat HEAPF64 buffer: [count, (pts,size,key)*count].
+ * We copy the triples ONCE into a standalone Float64Array (so WASM memory can
+ * be freed) and the caller transfers that buffer to the main thread zero-copy.
+ */
+async function walkPackets(file) {
+  const Module = await getModule()
+  const dir = `/walk_${mountCounter++}`
+  const path = `${dir}/input`
+
+  Module.FS.mkdir(dir)
+  Module.FS.mount(Module.WORKERFS, { blobs: [{ name: 'input', data: file }] }, dir)
+
+  const analyzeStart = performance.now()
+  try {
+    const ptr = Module.ccall('walk_video_packets', 'number', ['string'], [path])
+    if (!ptr) {
+      throw new Error('walk_video_packets returned null (open failed or no video stream)')
+    }
+    // Re-read HEAPF64 AFTER the call: ALLOW_MEMORY_GROWTH may have reallocated it.
+    const heap = Module.HEAPF64
+    const base = ptr / 8 // byte offset -> Float64 element index
+    const count = heap[base]
+    // slice() returns a *copy* detached from the WASM heap.
+    const packets = heap.slice(base + 1, base + 1 + 3 * count)
+    Module._free(ptr)
+    const analyzeMs = performance.now() - analyzeStart
+    return { packets, count, analyzeMs }
+  } finally {
+    try {
+      Module.FS.unmount(dir)
+      Module.FS.rmdir(dir)
+    } catch {
+      // ignore cleanup errors
+    }
+  }
+}
+
 self.onmessage = async (e) => {
   const { type, id } = e.data || {}
+
+  if (type === 'walk') {
+    try {
+      const { packets, count, analyzeMs } = await walkPackets(e.data.file)
+      self.postMessage(
+        { type: 'walkResult', id, ok: true, packets, count, importMs, analyzeMs },
+        [packets.buffer], // transfer, no copy
+      )
+    } catch (err) {
+      self.postMessage({ type: 'walkResult', id, ok: false, error: errorMessage(err) })
+    }
+    return
+  }
 
   if (type === 'preload') {
     try {
