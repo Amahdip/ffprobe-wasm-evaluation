@@ -1,6 +1,13 @@
 // @ts-ignore — generated Emscripten glue has no type declarations
 import createFFprobe from './ffprobe.js'
-import type { MinimalProbeResult, MinimalWasmModule } from './types.js'
+import type {
+  MinimalProbeResult,
+  MinimalWasmModule,
+  MaxrateAnalysis,
+  MaxrateOptions,
+  MaxrateWindowSource,
+  SegmentResult,
+} from './types.js'
 
 export * from './types.js'
 
@@ -50,8 +57,17 @@ function unlinkVirtualFile(module: MinimalWasmModule, virtualPath: string): void
 // file is read lazily instead of being copied into memory. This removes the
 // ~2GB ceiling of the arrayBuffer()/MEMFS path.
 
+interface WorkerSegment {
+  index: number
+  startSec: number
+  durationSec: number
+  data: Uint8Array
+}
+
 type WorkerResult =
-  | { id: number; ok: true; json: string }
+  | { id: number; ok: true; kind: 'probe'; json: string; importMs: number }
+  | { id: number; ok: true; kind: 'walk'; packets: Float64Array; count: number; importMs: number; walkMs: number }
+  | { id: number; ok: true; kind: 'segment'; segments: WorkerSegment[]; importMs: number; segmentMs: number }
   | { id: number; ok: false; error: string }
 
 let worker: Worker | null = null
@@ -87,6 +103,7 @@ function analyzeViaWorker(file: File): Promise<MinimalProbeResult> {
     w.postMessage({ id, file })
   }).then((res) => {
     if (!res.ok) throw new Error(res.error)
+    if (res.kind !== 'probe') throw new Error('unexpected worker response for probe')
     return JSON.parse(res.json) as MinimalProbeResult
   })
 }
@@ -139,4 +156,210 @@ export async function analyzeFile(file: File): Promise<MinimalProbeResult> {
     }
   }
   return analyzeDirect(file)
+}
+
+// ── Packet walk + content-aware maxrate ─────────────────────────────
+// Demuxes the video stream WITHOUT decoding and returns packed
+// [pts, size, keyflag] triples, then derives the akuma analysis hint
+// (peak window + keyframe list) + a source-derived maxrate preview.
+//
+// Walk requires a Worker + WORKERFS (FileReaderSync is worker-only); there is
+// no main-thread fallback because that would copy the whole file into memory.
+
+interface WalkData {
+  packets: Float64Array
+  count: number
+  importMs: number
+  walkMs: number
+}
+
+function walkViaWorker(file: File): Promise<WalkData> {
+  const w = getWorker()
+  const id = nextId++
+  return new Promise<WorkerResult>((resolve, reject) => {
+    pending.set(id, { resolve, reject })
+    w.postMessage({ id, file, kind: 'walk' })
+  }).then((res) => {
+    if (!res.ok) throw new Error(res.error)
+    if (res.kind !== 'walk') throw new Error('unexpected worker response for walk')
+    return { packets: res.packets, count: res.count, importMs: res.importMs, walkMs: res.walkMs }
+  })
+}
+
+/**
+ * Walks the video stream's packets (no decode) via a Web Worker + WORKERFS.
+ * Returns packed [pts_sec, size_bytes, keyflag] triples.
+ */
+export async function walkVideoPackets(file: File): Promise<{ packets: Float64Array; count: number }> {
+  if (typeof Worker === 'undefined' || typeof URL === 'undefined') {
+    throw new Error('walkVideoPackets requires a Web Worker environment (WORKERFS is worker-only)')
+  }
+  const { packets, count } = await walkViaWorker(file)
+  return { packets, count }
+}
+
+/**
+ * Splits a video at keyframe boundaries into MPEG-TS chunks via stream copy
+ * (no re-encode) in a Web Worker. Each chunk is a standalone, concat-joinable
+ * .ts (H.264/HEVC, Annex-B) — the client-side equivalent of akuma's
+ * `-f segment -c copy`. A new chunk opens at the first keyframe at/after each
+ * `chunkSeconds` boundary, so chunk durations land near (but ≥, at the keyframe)
+ * the target.
+ */
+export async function segmentVideo(file: File, chunkSeconds = 6): Promise<SegmentResult> {
+  if (typeof Worker === 'undefined' || typeof URL === 'undefined') {
+    throw new Error('segmentVideo requires a Web Worker environment (WORKERFS is worker-only)')
+  }
+  const t0 = performance.now()
+  const w = getWorker()
+  const id = nextId++
+  const res = await new Promise<WorkerResult>((resolve, reject) => {
+    pending.set(id, { resolve, reject })
+    w.postMessage({ id, file, kind: 'segment', chunkSeconds })
+  })
+  if (!res.ok) throw new Error(res.error)
+  if (res.kind !== 'segment') throw new Error('unexpected worker response for segment')
+  return {
+    segments: res.segments,
+    count: res.segments.length,
+    timings: { importMs: res.importMs, segmentMs: res.segmentMs, totalMs: performance.now() - t0 },
+  }
+}
+
+const DEFAULT_WINDOW_SECONDS = 60
+const DEFAULT_HEADROOM = 1.3
+const DEFAULT_CBR_THRESHOLD = 0.05
+
+/** Per-second aggregate of NON-keyframe (P+B) bytes. Index = integer second. */
+function perSecondNonKeyframeBytes(packets: Float64Array, n: number, numSeconds: number): Float64Array {
+  const perSec = new Float64Array(Math.max(1, numSeconds))
+  for (let i = 0; i < n; i++) {
+    if (packets[i * 3 + 2] >= 0.5) continue // keyframe
+    const sec = Math.floor(packets[i * 3])
+    if (sec >= 0 && sec < perSec.length) perSec[sec] += packets[i * 3 + 1]
+  }
+  return perSec
+}
+
+function sumRange(perSec: Float64Array, startSec: number, endSec: number): number {
+  const a = Math.max(0, Math.min(startSec, perSec.length))
+  const b = Math.max(0, Math.min(endSec, perSec.length))
+  let total = 0
+  for (let i = a; i < b; i++) total += perSec[i]
+  return total
+}
+
+// Rolling-sum sliding window: seed the first window, then add the incoming
+// second and drop the outgoing one — O(numSeconds), O(1) per step.
+function slidingPeakStart(perSec: Float64Array, numSeconds: number, windowSec: number): number {
+  let sum = 0
+  for (let i = 0; i < windowSec && i < numSeconds; i++) sum += perSec[i]
+  let bestStart = 0
+  let bestBytes = sum
+  const lastStart = numSeconds - windowSec
+  for (let s = 1; s <= lastStart; s++) {
+    sum += perSec[s + windowSec - 1] - perSec[s - 1]
+    if (sum > bestBytes) {
+      bestBytes = sum
+      bestStart = s
+    }
+  }
+  return bestStart
+}
+
+function coefficientOfVariation(values: number[]): number {
+  if (values.length < 2) return 0
+  const mean = values.reduce((s, v) => s + v, 0) / values.length
+  if (mean <= 0) return 0
+  const variance = values.reduce((s, v) => s + (v - mean) * (v - mean), 0) / values.length
+  return Math.sqrt(variance) / mean
+}
+
+/** Sorted keyframe (IDR) presentation timestamps — the GOP boundaries akuma needs. */
+function keyframeTimestamps(packets: Float64Array, n: number): number[] {
+  const out: number[] = []
+  for (let i = 0; i < n; i++) {
+    if (packets[i * 3 + 2] >= 0.5) out.push(packets[i * 3])
+  }
+  out.sort((a, b) => a - b)
+  return out
+}
+
+/**
+ * Walks the file and derives akuma's analysis hint: the peak (busiest) window
+ * by non-keyframe byte density, the keyframe/GOP timestamps, and a
+ * source-derived maxrate preview. On a flat/CBR source (low coefficient of
+ * variation) the packet sizes carry no motion signal, so it falls back to the
+ * video midpoint instead of the byte-peak.
+ */
+export async function analyzeMaxrate(file: File, options: MaxrateOptions = {}): Promise<MaxrateAnalysis> {
+  const windowSeconds = options.windowSeconds ?? DEFAULT_WINDOW_SECONDS
+  const headroom = options.headroomFactor ?? DEFAULT_HEADROOM
+  const cbrThreshold = options.cbrThreshold ?? DEFAULT_CBR_THRESHOLD
+
+  const t0 = performance.now()
+  const walk = await walkViaWorker(file)
+  const mathStart = performance.now()
+
+  const { packets } = walk
+  const n = walk.count
+
+  let durationSec = 0
+  let keyframeCount = 0
+  for (let i = 0; i < n; i++) {
+    const pts = packets[i * 3]
+    if (pts > durationSec) durationSec = pts
+    if (packets[i * 3 + 2] >= 0.5) keyframeCount++
+  }
+
+  const W = Math.max(1, Math.round(windowSeconds))
+  const numSeconds = Math.max(1, Math.ceil(durationSec))
+  const perSec = perSecondNonKeyframeBytes(packets, n, numSeconds)
+
+  // Tumbling segments → CBR metric.
+  const tumbling: number[] = []
+  for (let s = 0; s < numSeconds; s += W) tumbling.push(sumRange(perSec, s, s + W))
+  const cv = coefficientOfVariation(tumbling)
+  const isSourceCBR = tumbling.length >= 2 && cv < cbrThreshold
+
+  let startSec: number
+  let windowSource: MaxrateWindowSource
+  if (durationSec <= windowSeconds) {
+    startSec = 0
+    windowSource = 'whole-video'
+  } else if (isSourceCBR) {
+    startSec = Math.max(0, Math.min(Math.round(durationSec / 2 - windowSeconds / 2), numSeconds - W))
+    windowSource = 'midpoint-cbr'
+  } else {
+    startSec = slidingPeakStart(perSec, numSeconds, W)
+    windowSource = 'sliding-peak'
+  }
+
+  const endSec = Math.min(durationSec, startSec + windowSeconds)
+  const spanSec = Math.max(0.001, endSec - startSec)
+  const windowBytes = sumRange(perSec, startSec, Math.ceil(endSec))
+  const peakBitrateBps = (windowBytes * 8) / spanSec
+
+  const mathMs = performance.now() - mathStart
+  return {
+    videoanalyze: {
+      start: startSec,
+      end: endSec,
+      gop_timestamp: keyframeTimestamps(packets, n),
+    },
+    durationSec,
+    packetCount: n,
+    keyframeCount,
+    isSourceCBR,
+    cv,
+    windowSource,
+    peakBitrateKbps: Math.round(peakBitrateBps / 1000),
+    maxrateKbps: Math.round((peakBitrateBps * headroom) / 1000),
+    timings: {
+      importMs: walk.importMs,
+      walkMs: walk.walkMs,
+      mathMs,
+      totalMs: performance.now() - t0,
+    },
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@amirmahdip/ffprobe-wasm",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Zero-configuration client-side H.264 metadata probe and validation engine powered by WebAssembly.",
   "type": "module",
   "main": "./dist/index.js",

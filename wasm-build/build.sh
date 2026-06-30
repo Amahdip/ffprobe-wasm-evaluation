@@ -84,8 +84,8 @@ if [ ! -f "$FFMPEG_PREFIX/lib/libavformat.a" ]; then
         --disable-devices \
         --disable-filters \
         --disable-encoders \
-        --disable-muxers \
-        --disable-bsfs \
+        --enable-muxer=mpegts \
+        --enable-bsf=h264_mp4toannexb,hevc_mp4toannexb \
         --extra-cflags="-Oz" \
         --extra-ldflags="-Oz"
 
@@ -113,7 +113,7 @@ emcc "$SCRIPT_DIR/ffprobe-mini.c" \
     -Oz \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="createFFprobe" \
-    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_walk_video_packets","_free","_malloc"]' \
+    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_walk_video_packets","_segment_video","_free","_malloc"]' \
     -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS","WORKERFS","HEAPF64"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s FORCE_FILESYSTEM=1 \
@@ -140,7 +140,7 @@ emcc "$SCRIPT_DIR/ffprobe-mini.c" \
     -Oz \
     -s MODULARIZE=1 \
     -s EXPORT_NAME="createFFprobe" \
-    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_walk_video_packets","_free","_malloc"]' \
+    -s 'EXPORTED_FUNCTIONS=["_get_file_info_json","_walk_video_packets","_segment_video","_free","_malloc"]' \
     -s 'EXPORTED_RUNTIME_METHODS=["ccall","cwrap","FS","WORKERFS","HEAPF64"]' \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s FORCE_FILESYSTEM=1 \

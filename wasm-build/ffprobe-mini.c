@@ -23,6 +23,7 @@
 
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
+#include <libavcodec/bsf.h>
 #include <libavutil/avutil.h>
 #include <libavutil/pixdesc.h>
 #include <libavutil/dict.h>
@@ -233,6 +234,150 @@ double *walk_video_packets(const char *filename) {
 
     buf[0] = (double)n;
     return buf;
+}
+
+/* ── keyframe-aligned segmentation (-c copy) ──────────────────────────
+ *
+ * segment_video() demuxes the best video stream and remuxes it into
+ * keyframe-aligned MPEG-TS segments WITHOUT re-encoding (stream copy),
+ * applying h264/hevc_mp4toannexb so MP4/MOV sources produce valid .ts.
+ * This is the client-side equivalent of akuma's `-f segment -c copy`.
+ *
+ * Segments are written as "<out_prefix>NNN.ts" into the (MEMFS) filesystem;
+ * the JS side reads each back with FS.readFile, uploads it, then frees it.
+ * A new segment opens at the first keyframe at/after every `chunk_seconds`
+ * boundary (mirrors `-segment_time` + `-reset_timestamps 1`).
+ *
+ * Returns a malloc'd double buffer the JS reads via HEAPF64:
+ *   out[0]             = segment count M (as double)
+ *   out[1 + 3*j + 0]   = segment start in source (seconds)
+ *   out[1 + 3*j + 1]   = segment duration (seconds)
+ *   out[1 + 3*j + 2]   = segment payload bytes written
+ * Caller MUST Module._free() it. Returns NULL on open/mux-setup failure.
+ */
+double *segment_video(const char *filename, double chunk_seconds, const char *out_prefix) {
+    if (chunk_seconds <= 0) chunk_seconds = 6.0;
+
+    AVFormatContext *in = NULL;
+    if (avformat_open_input(&in, filename, NULL, NULL) < 0)
+        return NULL;
+    if (avformat_find_stream_info(in, NULL) < 0) {
+        avformat_close_input(&in);
+        return NULL;
+    }
+    int vstream = av_find_best_stream(in, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    if (vstream < 0) {
+        avformat_close_input(&in);
+        return NULL;
+    }
+    AVStream *ist = in->streams[vstream];
+    double tb = av_q2d(ist->time_base);
+
+    /* Annex-B bitstream filter for MP4-style (length-prefixed) H.264/HEVC.
+     * On a stream that is already Annex-B (e.g. mpegts source) these BSFs
+     * pass packets through, so applying them unconditionally is safe. */
+    AVBSFContext *bsf = NULL;
+    const AVBitStreamFilter *bsf_def = NULL;
+    if (ist->codecpar->codec_id == AV_CODEC_ID_H264)
+        bsf_def = av_bsf_get_by_name("h264_mp4toannexb");
+    else if (ist->codecpar->codec_id == AV_CODEC_ID_HEVC)
+        bsf_def = av_bsf_get_by_name("hevc_mp4toannexb");
+    if (bsf_def && av_bsf_alloc(bsf_def, &bsf) == 0) {
+        avcodec_parameters_copy(bsf->par_in, ist->codecpar);
+        bsf->time_base_in = ist->time_base;
+        if (av_bsf_init(bsf) < 0) av_bsf_free(&bsf); /* sets bsf = NULL */
+    }
+    AVCodecParameters *out_par = bsf ? bsf->par_out : ist->codecpar;
+
+    size_t cap = 256, len = 1;            /* index 0 reserved for the count */
+    double *meta = (double *)malloc(cap * sizeof(double));
+    if (!meta) { if (bsf) av_bsf_free(&bsf); avformat_close_input(&in); return NULL; }
+
+    AVFormatContext *out = NULL;
+    AVStream *ost = NULL;
+    int seg = -1, failed = 0;
+    int64_t seg_base = 0;
+    double seg_start_sec = 0.0, last_sec = 0.0, seg_bytes = 0.0;
+    long long m = 0;
+    AVPacket *pkt = av_packet_alloc();
+
+    while (!failed && av_read_frame(in, pkt) >= 0) {
+        if (pkt->stream_index != vstream) { av_packet_unref(pkt); continue; }
+
+        int64_t ts = (pkt->dts != AV_NOPTS_VALUE) ? pkt->dts
+                   : (pkt->pts != AV_NOPTS_VALUE ? pkt->pts : 0);
+        double sec = (double)ts * tb;
+        int is_key = (pkt->flags & AV_PKT_FLAG_KEY) != 0;
+
+        if (is_key && (seg < 0 || (sec - seg_start_sec) >= chunk_seconds)) {
+            if (out) {                         /* finalize previous segment */
+                av_interleaved_write_frame(out, NULL);
+                av_write_trailer(out);
+                if (out->pb) avio_closep(&out->pb);
+                avformat_free_context(out);
+                out = NULL;
+                if (len + 3 > cap) { cap *= 2; meta = (double *)realloc(meta, cap * sizeof(double)); }
+                meta[len++] = seg_start_sec;
+                meta[len++] = last_sec - seg_start_sec;
+                meta[len++] = seg_bytes;
+            }
+            seg++;
+            char path[1024];
+            snprintf(path, sizeof(path), "%s%03d.ts", out_prefix, seg);
+            if (avformat_alloc_output_context2(&out, NULL, "mpegts", path) < 0 || !out) { out = NULL; failed = 1; av_packet_unref(pkt); break; }
+            ost = avformat_new_stream(out, NULL);
+            avcodec_parameters_copy(ost->codecpar, out_par);
+            ost->codecpar->codec_tag = 0;
+            if (avio_open(&out->pb, path, AVIO_FLAG_WRITE) < 0) { avformat_free_context(out); out = NULL; failed = 1; av_packet_unref(pkt); break; }
+            if (avformat_write_header(out, NULL) < 0) { avio_closep(&out->pb); avformat_free_context(out); out = NULL; failed = 1; av_packet_unref(pkt); break; }
+            seg_base = ts;
+            seg_start_sec = sec;
+            seg_bytes = 0.0;
+            m++;
+        }
+        if (!out) { av_packet_unref(pkt); continue; } /* skip until first keyframe */
+
+        /* Reset timestamps so each .ts restarts near 0 (== -reset_timestamps 1). */
+        if (pkt->pts != AV_NOPTS_VALUE) pkt->pts -= seg_base;
+        if (pkt->dts != AV_NOPTS_VALUE) pkt->dts -= seg_base;
+
+        if (bsf) {
+            if (av_bsf_send_packet(bsf, pkt) == 0) {
+                while (av_bsf_receive_packet(bsf, pkt) == 0) {
+                    av_packet_rescale_ts(pkt, ist->time_base, ost->time_base);
+                    pkt->stream_index = 0;
+                    seg_bytes += (double)pkt->size;
+                    av_interleaved_write_frame(out, pkt);
+                    av_packet_unref(pkt);
+                }
+            }
+        } else {
+            av_packet_rescale_ts(pkt, ist->time_base, ost->time_base);
+            pkt->stream_index = 0;
+            seg_bytes += (double)pkt->size;
+            av_interleaved_write_frame(out, pkt);
+        }
+        last_sec = sec;
+        av_packet_unref(pkt);
+    }
+
+    if (out) {                                  /* finalize the last segment */
+        av_interleaved_write_frame(out, NULL);
+        av_write_trailer(out);
+        if (out->pb) avio_closep(&out->pb);
+        avformat_free_context(out);
+        out = NULL;
+        if (len + 3 > cap) { cap *= 2; meta = (double *)realloc(meta, cap * sizeof(double)); }
+        meta[len++] = seg_start_sec;
+        meta[len++] = last_sec - seg_start_sec;
+        meta[len++] = seg_bytes;
+    }
+
+    av_packet_free(&pkt);
+    if (bsf) av_bsf_free(&bsf);
+    avformat_close_input(&in);
+    meta[0] = (double)m;
+    return meta;
 }
 
 /* ── main probe function ──────────────────────────────────────────── */
