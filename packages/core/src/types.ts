@@ -32,6 +32,10 @@ export interface MinimalStream {
   sample_fmt?: string | null
   bit_rate?: number
   duration?: number | null
+  nb_frames?: number
+  frame_size?: number
+  field_order?: number
+  time_base?: string
   tags?: MinimalStreamTag
 }
 
@@ -50,7 +54,43 @@ export interface MinimalProbeResult {
   video_stream_count?: number
   audio_stream_count?: number
   streams?: MinimalStream[]
+  probe_score?: number
   tags?: MinimalStreamTag
+}
+
+/**
+ * A stream as ffprobe itself prints it: the numeric fields below are strings,
+ * the stream id is hex, and field_order is the enum name rather than its
+ * ordinal. Produced by `toFfprobeJson`.
+ */
+export interface FfprobeStream
+  extends Omit<
+    MinimalStream,
+    'id' | 'duration' | 'bit_rate' | 'nb_frames' | 'sample_rate' | 'field_order'
+  > {
+  id?: string
+  duration?: string
+  bit_rate?: string
+  nb_frames?: string
+  sample_rate?: string
+  field_order?: string
+}
+
+export interface FfprobeFormat {
+  format_name?: string | null
+  format_long_name?: string | null
+  nb_streams?: number
+  probe_score?: number
+  duration?: string
+  bit_rate?: string
+  size?: string
+  tags?: MinimalStreamTag
+}
+
+/** The `{ streams, format }` document ffprobe emits with -show_streams -show_format. */
+export interface FfprobeJson {
+  streams: FfprobeStream[]
+  format: FfprobeFormat
 }
 
 /** Emscripten WORKERFS mount options (subset we use). */

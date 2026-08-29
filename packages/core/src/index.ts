@@ -1,6 +1,8 @@
 // @ts-ignore — generated Emscripten glue has no type declarations
 import createFFprobe from './ffprobe.js'
 import type {
+  FfprobeJson,
+  FfprobeStream,
   MinimalProbeResult,
   MinimalWasmModule,
   MaxrateAnalysis,
@@ -190,6 +192,86 @@ function walkViaWorker(file: File): Promise<WalkData> {
  * Walks the video stream's packets (no decode) via a Web Worker + WORKERFS.
  * Returns packed [pts_sec, size_bytes, keyflag] triples.
  */
+/**
+ * Fields ffprobe prints as strings even though they hold numbers. A consumer
+ * that unmarshals into ffprobe's own schema rejects the whole document if any
+ * one of them arrives as a JSON number.
+ */
+const FFPROBE_STRING_FIELDS = [
+  'duration',
+  'bit_rate',
+  'nb_frames',
+  'sample_rate',
+  'start_time',
+] as const
+
+/** AVFieldOrder, in ffmpeg's declaration order. ffprobe prints the name, and
+ *  omits the field entirely when the order is unknown. */
+const FIELD_ORDER_NAMES = ['unknown', 'progressive', 'tt', 'bb', 'tb', 'bt']
+
+function asString(value: unknown): string | undefined {
+  return value === null || value === undefined ? undefined : String(value)
+}
+
+/**
+ * Rebuilds a probe result as the `{ streams, format }` document ffprobe emits
+ * with `-show_streams -show_format`.
+ *
+ * The wasm probe reports native JS types, which is what you want when reading
+ * the result in JavaScript. Services that parse ffprobe output do not: they
+ * unmarshal into ffprobe's schema, where duration, bit_rate, nb_frames,
+ * sample_rate and size are strings, the stream id is hex, and field_order is
+ * the enum name. Send this when the far side expects ffprobe's own JSON.
+ *
+ * @param probe    result from `analyzeFile`
+ * @param fileSize byte length of the source, used for `format.size`
+ */
+export function toFfprobeJson(
+  probe: MinimalProbeResult,
+  fileSize?: number,
+): FfprobeJson {
+  const streams: FfprobeStream[] = (probe.streams ?? []).map((stream) => {
+    const out: Record<string, unknown> = { ...stream }
+
+    for (const key of FFPROBE_STRING_FIELDS) {
+      const value = out[key]
+      if (value !== null && value !== undefined) out[key] = String(value)
+    }
+
+    if (typeof out.id === 'number') out.id = `0x${out.id.toString(16)}`
+
+    if (typeof out.field_order === 'number') {
+      const name = FIELD_ORDER_NAMES[out.field_order]
+      if (name && name !== 'unknown') out.field_order = name
+      else delete out.field_order
+    }
+
+    return out as unknown as FfprobeStream
+  })
+
+  return {
+    streams,
+    format: {
+      format_name: probe.format_name,
+      format_long_name: probe.format_long_name ?? undefined,
+      nb_streams: probe.nb_streams,
+      probe_score: probe.probe_score,
+      duration: asString(probe.duration),
+      bit_rate: asString(probe.bit_rate),
+      size: asString(fileSize),
+      tags: probe.tags,
+    },
+  }
+}
+
+/**
+ * Probes a file and returns it in ffprobe's JSON shape — `analyzeFile` followed
+ * by `toFfprobeJson`, with `format.size` taken from the file.
+ */
+export async function analyzeFileAsFfprobe(file: File): Promise<FfprobeJson> {
+  return toFfprobeJson(await analyzeFile(file), file.size)
+}
+
 export async function walkVideoPackets(file: File): Promise<{ packets: Float64Array; count: number }> {
   if (typeof Worker === 'undefined' || typeof URL === 'undefined') {
     throw new Error('walkVideoPackets requires a Web Worker environment (WORKERFS is worker-only)')
